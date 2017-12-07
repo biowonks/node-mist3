@@ -1,0 +1,33 @@
+{
+  "name": "node-mist3",
+  "version": "1.0.0",
+  "description": "Helper package to deal with MiST3 API",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "NODE_PATH=node_modules node_modules/.bin/nyc node_modules/.bin/mocha --reporter mocha-pretty-bunyan-nyan $(find src -name '*tests.js')",
+    "coverage": "NODE_PATH=node_modules node_modules/.bin/nyc report --reporter=text-lcov | coveralls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biowonks/node-mist3.git"
+  },
+  "keywords": [
+    "mist3",
+    "bioinformatics"
+  ],
+  "author": "Davi Ortega",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/biowonks/node-mist3/issues"
+  },
+  "homepage": "https://github.com/biowonks/node-mist3#readme",
+  "devDependencies": {
+    "bunyan": "^1.8.12",
+    "chai": "^4.1.2",
+    "coveralls": "^3.0.0",
+    "eslint": "^4.12.1",
+    "mocha": "^4.0.1",
+    "mocha-pretty-bunyan-nyan": "^1.0.4",
+    "nyc": "^11.3.0"
+  }
+}
