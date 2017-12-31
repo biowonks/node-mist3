@@ -36,7 +36,7 @@ describe('Genes', function() {
 			})
 		})
 	})
-	describe.only('getGeneHood', function() {
+	describe('getGeneHood', function() {
 		it('should pass', function() {
 			const genes = new Genes()
 			const stableId = 'GCF_000302455.1-A994_RS00140'
