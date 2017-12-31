@@ -5,6 +5,11 @@ const bunyan = require('bunyan')
 
 const NodeMist3 = require('./NodeMist3Abstract')
 
+const kDefaults = {
+	downstream: 10,
+	upstream: 10
+}
+
 module.exports =
 class Genes extends NodeMist3 {
 	constructor(options) {
@@ -18,8 +23,8 @@ class Genes extends NodeMist3 {
 
 	infoAll(geneList) {
 		const queries = []
-		geneList.forEach((accession) => {
-			queries.push(this.info(accession))
+		geneList.forEach((stableId) => {
+			queries.push(this.info(stableId))
 		})
 		return new Promise((resolve, reject) => {
 			Promise.all(queries).then((results) => {
@@ -28,10 +33,10 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	info(geneAccession) {
-		this.httpOptions.path = '/v1/genes/' + geneAccession
+	info(stableID) {
+		this.httpOptions.path = '/v1/genes/' + stableID
 		return new Promise((resolve, reject) => {
-			this.log.info('Fetching gene information from MiST3 : ' + geneAccession)
+			this.log.info('Fetching gene information from MiST3 : ' + stableID)
 			const req = http.request(this.httpOptions, function(res) {
 				const chunks = []
 				res.on('data', function(chunk) {
@@ -86,6 +91,31 @@ class Genes extends NodeMist3 {
 				})
 			})
 			req.end()
+		})
+	}
+
+	getGeneHood(stableId, downstream = kDefaults.downstream, upstream = kDefaults.upstream) {
+		return new Promise((resolve, reject) => {
+			this.info(stableId).then((mainGeneInfo) => {
+				this.log.info(`Info from reference gene acquired: ${mainGeneInfo.aseq_id}`)
+				this.httpOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
+				const req = http.request(this.httpOptions, (res) => {
+					const chunks = []
+					res.on('data', (chunk) => {
+						chunks.push(chunk)
+					})
+					res.on('end', () => {
+						this.log.info('Got info from gene neighborhood. Parsing.')
+						const geneHood = JSON.parse(Buffer.concat(chunks))
+						geneHood.splice(upstream, 0, mainGeneInfo)
+						resolve(geneHood)
+					})
+					res.on('error', (err) => {
+						reject(err)
+					})
+				})
+				req.end()
+			})
 		})
 	}
 }
