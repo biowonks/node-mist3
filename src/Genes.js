@@ -105,6 +105,7 @@ class Genes extends NodeMist3 {
 						chunks.push(chunk)
 					})
 					res.on('end', () => {
+						this.log.info('Got info from gene neighborhood. Parsing.')
 						const geneHood = JSON.parse(Buffer.concat(chunks))
 						geneHood.splice(upstream, 0, mainGeneInfo)
 						resolve(geneHood)
