@@ -36,4 +36,18 @@ describe('Genes', function() {
 			})
 		})
 	})
+	describe.only('getGeneHood', function() {
+		it('should pass', function() {
+			const genes = new Genes()
+			const stableId = 'GCF_000302455.1-A994_RS00140'
+			const upstream = 2
+			const downstream = 4
+			return genes.getGeneHood(stableId, upstream, downstream).then((items) => {
+				expect(items.length).eql(upstream + downstream + 1)
+			})
+				.catch((err) => {
+					console.log(err)
+				})
+		})
+	})
 })
