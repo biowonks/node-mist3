@@ -50,4 +50,15 @@ describe('Genes', function() {
 				})
 		})
 	})
+	describe('getAseqInfo', function() {
+		it('should pass', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				genes.getAseqInfo([gene]).then((result) => {
+					expect(result.length).eql(1)
+				})
+			})
+		})
+	})
 })
