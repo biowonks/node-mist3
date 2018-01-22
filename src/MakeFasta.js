@@ -1,7 +1,6 @@
 'use strict'
 
 const bunyan = require('bunyan')
-const Transform = require('stream').Transform
 
 const fastaTagDefaults = {
 	numOfLettersForGenus: 2,
@@ -10,33 +9,32 @@ const fastaTagDefaults = {
 	featureSeparator: '|'
 }
 
-
 module.exports =
-class MakeFasta extends Transform {
+class MakeFasta {
 	constructor(genomeInfo) {
-		super({objectMode: true})
 		this.genomeInfo_ = genomeInfo
 		this.log = bunyan.createLogger({
 			name: 'MakeFasta'
 		})
 	}
 
-	_transform(chunk, enc, next) {
+	fasta(geneInfoList) {
 		let numEntries = 0
-		chunk.forEach((item) => {
-			if (item.ai.sequence) {
-				const tag = this.generateTag_(item)
-				const sequence = item.ai.sequence
+		const fasta = []
+		geneInfoList.forEach((geneInfo) => {
+			if (geneInfo.ai.sequence) {
+				const tag = this.generateTag_(geneInfo)
+				const sequence = geneInfo.ai.sequence
 				const entry = this.makeFastaEntry_(tag, sequence)
-				this.push(entry)
+				fasta.push(entry)
 				numEntries++
 			}
 			else {
-				this.log.warn('No information on MiST3 for: ' + item.ai.id)
+				this.log.warn('No information on MiST3 for: ' + geneInfo.ai.id)
 			}
 		})
 		this.log.info('Pushing ' + numEntries + ' fasta entries')
-		next()
+		return fasta
 	}
 
 	makeFastaEntry_(header, sequence) {
