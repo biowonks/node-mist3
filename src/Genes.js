@@ -21,6 +21,46 @@ class Genes extends NodeMist3 {
 		)
 	}
 
+	getAseqInfo(genes = [], options = {throwError: true}) {
+		this.httpOptions.method = 'POST'
+		this.httpOptions.path = '/v1/aseqs'
+		this.httpOptions.headers = {
+			'Content-Type': 'application/json'
+		}
+		const aseqs = []
+		genes.forEach((gene) => {
+			aseqs.push(gene.aseq_id)
+		})
+		const content = JSON.stringify(aseqs)
+		this.log.info(`Fetching information for ${genes.length} sequences from MiST3`)
+		let buffer = []
+		return new Promise((resolve, reject) => {
+			const req = http.request(this.httpOptions, (res) => {
+				if (res.statusCode === 400)
+					reject(res)
+				if (res.statusCode !== 200)
+					reject(res)
+				res.on('data', (data) => {
+					buffer.push(data)
+				})
+				res.on('error', reject)
+				res.on('end', () => {
+					this.log.info('All set')
+					const items = JSON.parse(Buffer.concat(buffer))
+					const final = []
+					genes.forEach((gene) => {
+						gene.aseqInfo = items.filter((item) => {
+							return gene.aseq_id === item.id
+						})[0]
+					})
+					resolve(genes)
+				})
+			})
+			req.write(content)
+			req.end()
+		})
+	}
+
 	infoAll(geneList) {
 		const queries = []
 		geneList.forEach((stableId) => {
