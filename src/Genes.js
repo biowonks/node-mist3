@@ -22,6 +22,7 @@ class Genes extends NodeMist3 {
 	}
 
 	getAseqInfo(genes = [], options = {throwError: true}) {
+		this.log.info(`Fetching Aseq Info from MiST3`)
 		this.httpOptions.method = 'POST'
 		this.httpOptions.path = '/v1/aseqs'
 		this.httpOptions.headers = {
@@ -49,7 +50,7 @@ class Genes extends NodeMist3 {
 					const items = JSON.parse(Buffer.concat(buffer))
 					const final = []
 					genes.forEach((gene) => {
-						gene.aseqInfo = items.filter((item) => {
+						gene.ai = items.filter((item) => {
 							return gene.aseq_id === item.id
 						})[0]
 					})
