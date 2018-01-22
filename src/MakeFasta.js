@@ -18,7 +18,7 @@ class MakeFasta {
 		})
 	}
 
-	fasta(geneInfoList) {
+	process(geneInfoList) {
 		let numEntries = 0
 		const fasta = []
 		geneInfoList.forEach((geneInfo) => {
