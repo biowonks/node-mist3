@@ -4,7 +4,7 @@ const Genes = require('./Genes')
 const MakeFasta = require('./MakeFasta')
 const Genomes = require('./Genomes')
 
-exports = {
+module.exports = {
 	Genes,
 	Genomes,
 	MakeFasta
