@@ -49,12 +49,17 @@ class Genes extends NodeMist3 {
 					this.log.info('All set')
 					const items = JSON.parse(Buffer.concat(buffer))
 					const final = []
-					genes.forEach((gene) => {
-						gene.ai = items.filter((item) => {
-							return gene.aseq_id === item.id
-						})[0]
-					})
-					resolve(genes)
+					if (items) {
+						genes.forEach((gene) => {
+							gene.ai = items.filter((item) => {
+								return gene.aseq_id === item.id
+							})[0]
+						})
+						resolve(genes)
+					}
+					else {
+						reject(res)
+					}
 				})
 			})
 			req.write(content)
