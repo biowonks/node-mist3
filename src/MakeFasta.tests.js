@@ -18,7 +18,7 @@ describe('MakeFasta', function() {
 			const mkFasta = new MakeFasta(genomeInfo)
 			genes.info(geneVersion)
 				.then((geneInfo) => {
-					return genes.getAseqInfo([geneInfo])
+					return genes.addAseqInfo([geneInfo])
 				})
 				.then((geneInfoPlusList) => {
 					geneInfoPlusList.forEach((geneInfoPlus) => {
@@ -47,7 +47,7 @@ describe('MakeFasta', function() {
 				const mkFasta = new MakeFasta(genomeInfo)
 				genes.info(geneVersion)
 					.then((geneInfo) => {
-						return genes.getAseqInfo([geneInfo])
+						return genes.addAseqInfo([geneInfo])
 					})
 					.then((geneInfoList) => {
 						return mkFasta.process(geneInfoList)
