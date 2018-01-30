@@ -50,6 +50,7 @@ class Genes extends NodeMist3 {
 					const items = JSON.parse(Buffer.concat(buffer))
 					const final = []
 					if (items) {
+						console.log(items)
 						genes.forEach((gene) => {
 							gene.ai = items.filter((item) => {
 								return gene.aseq_id === item.id
