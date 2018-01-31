@@ -248,6 +248,33 @@ describe('Genes', function() {
 				})
 			})
 		})
+		it.only('should reject if gene is not found', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
+				return genes.addAseqInfo([gene], {throwError: true}).then((result) => {
+					expect(0, 'This should not have passed').eql(1)
+				})
+					.catch((err) => {
+						expect(err).eql('Aseq wTCio8ibKOlaJ_LDGhkSVA not found')
+					})
+			})
+		})
+		it.only('should warns if gene is not found and asked to not throw error in options', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
+				return genes.addAseqInfo([gene], {throwError: false}).then((results) => {
+					expect(results[0].ai).to.be.undefined
+				})
+					.catch((err) => {
+						console.log(err.message)
+						expect(err, 'This should have passed').to.be.undefined
+					})
+			})
+		})
 		it('should pass with bunch', function() {
 			const genes = new Genes()
 			const stableId = 'GCF_000302455.1-A994_RS00140'

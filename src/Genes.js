@@ -42,6 +42,7 @@ class Genes extends NodeMist3 {
 				aseqFetches.push(this.getAseqInfoBatch(batch))
 			}
 			Promise.all(aseqFetches).then((aseqBatches) => {
+				this.log.info('All Aseq has been retrieved, now adding to genes')
 				let aseqInfo = []
 				try {
 					aseqBatches.forEach((aseqBatch) => {
@@ -51,11 +52,17 @@ class Genes extends NodeMist3 {
 						gene.ai = aseqInfo.filter((item) => {
 							return gene.aseq_id === item.id
 						})[0]
+						if (!gene.ai) {
+							this.log.warn(`Aseq ${gene.aseq_id} not found`)
+							if (options.throwError === true) {
+								reject(`Aseq ${gene.aseq_id} not found`)
+							}
+						}
 					})
 					resolve(genes)
 				}
 				catch (err) {
-					reject(err)
+					reject(err.message)
 				}
 			})
 				.catch((err) => {
@@ -91,7 +98,7 @@ class Genes extends NodeMist3 {
 				})
 				res.on('error', reject)
 				res.on('end', () => {
-					this.log.info('All set')
+					this.log.info('Aseq retrieved')
 					const items = JSON.parse(Buffer.concat(buffer))
 					const final = []
 					resolve(items)
