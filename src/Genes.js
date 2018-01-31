@@ -22,7 +22,7 @@ class Genes extends NodeMist3 {
 		)
 	}
 
-	addAseqInfo(genes = [], options = {throwError: true}) {
+	addAseqInfo(genes = [], options = {keepGoing: false}) {
 		this.log.info(`Adding Aseq information for ${genes.length} proteins from MiST3`)
 		return new Promise((resolve, reject) => {
 			const aseqs = []
@@ -56,7 +56,7 @@ class Genes extends NodeMist3 {
 							if (gene.header())
 								this.log.warn(`gene ${gene.header_} not found`)
 							this.log.warn(`Aseq ${gene.aseq_id} not found`)
-							if (options.throwError === true) {
+							if (options.keepGoing === false) {
 								reject(`Aseq ${gene.aseq_id} not found`)
 							}
 						}
