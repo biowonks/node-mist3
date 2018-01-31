@@ -36,6 +36,7 @@ class Genes extends NodeMist3 {
 			})
 
 			const aseqFetches = []
+			let error = false
 
 			while (unique.length !== 0) {
 				const batch = unique.splice(0, kDefaults.maxAseqs)
@@ -44,23 +45,26 @@ class Genes extends NodeMist3 {
 			Promise.all(aseqFetches).then((aseqBatches) => {
 				this.log.info('All Aseq has been retrieved, now adding to genes')
 				let aseqInfo = []
+
+				aseqBatches.forEach((aseqBatch) => {
+					aseqInfo = aseqInfo.concat(aseqBatch)
+				})
 				try {
-					aseqBatches.forEach((aseqBatch) => {
-						aseqInfo = aseqInfo.concat(aseqBatch)
-					})
 					genes.forEach((gene) => {
 						gene.ai = aseqInfo.filter((item) => {
 							return gene.aseq_id === item.id
 						})[0]
 						if (!gene.ai) {
 							this.log.warn(`Aseq ${gene.aseq_id} not found`)
-							if (options.keepGoing === false)
-								reject(`Aseq ${gene.aseq_id} not found`)
+							if (options.keepGoing === false) {
+								throw Error(`Aseq ${gene.aseq_id} not found`)
+							}
 						}
 					})
 					resolve(genes)
 				}
 				catch (err) {
+					console.log('sdass')
 					reject(err.message)
 				}
 			})
