@@ -53,12 +53,9 @@ class Genes extends NodeMist3 {
 							return gene.aseq_id === item.id
 						})[0]
 						if (!gene.ai) {
-							if (gene.header())
-								this.log.warn(`gene ${gene.header_} not found`)
 							this.log.warn(`Aseq ${gene.aseq_id} not found`)
-							if (options.keepGoing === false) {
+							if (options.keepGoing === false)
 								reject(`Aseq ${gene.aseq_id} not found`)
-							}
 						}
 					})
 					resolve(genes)
