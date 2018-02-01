@@ -2,6 +2,7 @@
 
 const stream = require('stream')
 const through2 = require('through2')
+const fs = require('fs')
 
 const expect = require('chai').expect
 const Genes = require('./Genes')
@@ -236,14 +237,42 @@ describe('Genes', function() {
 				})
 		})
 	})
-	describe('getAseqInfo', function() {
+	describe('addAseqInfo', function() {
 		it('should pass', function() {
 			const genes = new Genes()
 			const geneVersion = 'GCF_000302455.1-A994_RS01985'
 			return genes.info(geneVersion).then((gene) => {
-				genes.getAseqInfo([gene]).then((result) => {
+				return genes.addAseqInfo([gene]).then((result) => {
+					expect(result[0].ai).to.not.be.undefined
 					expect(result.length).eql(1)
 				})
+			})
+		})
+		it('should reject if gene is not found', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
+				return genes.addAseqInfo([gene], {keepGoing: false}).then((result) => {
+					expect(0, 'This should not have passed').eql(1)
+				})
+					.catch((err) => {
+						expect(err).eql('Aseq wTCio8ibKOlaJ_LDGhkSVA not found')
+					})
+			})
+		})
+		it('should warns if gene is not found and asked to not throw error in options', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
+				return genes.addAseqInfo([gene], {keepGoing: true}).then((results) => {
+					expect(results[0].ai).to.be.undefined
+				})
+					.catch((err) => {
+						console.log(err.message)
+						expect(err, 'This should have passed').to.be.undefined
+					})
 			})
 		})
 		it('should pass with bunch', function() {
@@ -252,14 +281,28 @@ describe('Genes', function() {
 			const upstream = 10
 			const downstream = 10
 			return genes.getGeneHood(stableId, upstream, downstream).then((items) => {
-				genes.getAseqInfo(items).then((result) => {
+				return genes.addAseqInfo(items).then((result) => {
 					expect(result.length).eql(upstream + downstream + 1)
 				})
 			})
 		})
+		it('should pass even if it is way too many', function() {
+			this.timeout(30000)
+			const genes = new Genes()
+			const stableIds = JSON.parse(fs.readFileSync('./data-test/stableIds.3398.json'))
+			return genes.infoAll(stableIds).then((geneList) => {
+				return genes.addAseqInfo(geneList).then((geneWithAseqInfoList) => {
+					expect(geneWithAseqInfoList.length).eql(stableIds.length)
+				})
+					.catch((err) => {
+						console.log(err)
+						throw new Error('It was not supposed to fail')
+					})
+			})
+		})
 	})
 	describe('Integration', function() {
-		describe('getGeneHood and getAseqInfo', function() {
+		describe('getGeneHood and addAseqInfo', function() {
 			this.timeout(14000)
 			it('should pass', function(done) {
 				const genes = new Genes()
@@ -272,7 +315,7 @@ describe('Genes', function() {
 				const downstream = 10
 				stableIds.forEach((stableId, i) => {
 					genes.getGeneHood(stableId, upstream, downstream).then((items) => {
-						genes.getAseqInfo(items).then((result) => {
+						genes.addAseqInfo(items).then((result) => {
 							expect(result.length).eql(upstream + downstream + 1)
 							if (i === stableIds.length - 1)
 								done()
@@ -291,7 +334,7 @@ describe('Genes', function() {
 				const downstream = 10
 				stableIds.forEach((stableId, i) => {
 					genes.getGeneHood(stableId, upstream, downstream).then((items) => {
-						genes.getAseqInfo(items).then((result) => {
+						genes.addAseqInfo(items).then((result) => {
 							expect(result.length).eql(upstream + downstream + 1)
 							if (i === stableIds.length - 1)
 								done()
@@ -318,7 +361,7 @@ describe('Genes', function() {
 
 				const addSeqInfo = through2.obj(function(chunk, enc, next) {
 					const self = this
-					genes.getAseqInfo(chunk).then((items) => {
+					genes.addAseqInfo(chunk).then((items) => {
 						self.push(JSON.stringify(items))
 						next()
 					})

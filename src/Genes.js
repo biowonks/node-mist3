@@ -7,7 +7,8 @@ const NodeMist3 = require('./NodeMist3Abstract')
 
 const kDefaults = {
 	downstream: 10,
-	upstream: 10
+	upstream: 10,
+	maxAseqs: 1000
 }
 
 module.exports =
@@ -21,40 +22,89 @@ class Genes extends NodeMist3 {
 		)
 	}
 
-	getAseqInfo(genes = [], options = {throwError: true}) {
+	addAseqInfo(genes = [], options = {keepGoing: false}) {
+		this.log.info(`Adding Aseq information for ${genes.length} proteins from MiST3`)
+		return new Promise((resolve, reject) => {
+			const aseqs = []
+
+			genes.forEach((gene) => {
+				aseqs.push(gene.aseq_id)
+			})
+
+			const unique = aseqs.filter((v, i, a) => {
+				return a.indexOf(v) === i
+			})
+
+			const aseqFetches = []
+			let error = false
+
+			while (unique.length !== 0) {
+				const batch = unique.splice(0, kDefaults.maxAseqs)
+				aseqFetches.push(this.getAseqInfoBatch(batch))
+			}
+			Promise.all(aseqFetches).then((aseqBatches) => {
+				this.log.info('All Aseq has been retrieved, now adding to genes')
+				let aseqInfo = []
+
+				aseqBatches.forEach((aseqBatch) => {
+					aseqInfo = aseqInfo.concat(aseqBatch)
+				})
+				try {
+					genes.forEach((gene) => {
+						gene.ai = aseqInfo.filter((item) => {
+							return gene.aseq_id === item.id
+						})[0]
+						if (!gene.ai) {
+							this.log.warn(`Aseq ${gene.aseq_id} not found`)
+							if (options.keepGoing === false) {
+								throw Error(`Aseq ${gene.aseq_id} not found`)
+							}
+						}
+					})
+					resolve(genes)
+				}
+				catch (err) {
+					console.log('sdass')
+					reject(err.message)
+				}
+			})
+				.catch((err) => {
+					reject(err)
+				})
+		})
+	}
+
+	getAseqInfoBatch(aseqs = [], options = {throwError: true}) {
 		this.log.info(`Fetching Aseq Info from MiST3`)
 		this.httpOptions.method = 'POST'
 		this.httpOptions.path = '/v1/aseqs'
 		this.httpOptions.headers = {
 			'Content-Type': 'application/json'
 		}
-		const aseqs = []
-		genes.forEach((gene) => {
-			aseqs.push(gene.aseq_id)
-		})
+		if (aseqs.length > kDefaults.maxAseqs)
+			throw Error('Only 1000 aseqs can be called at once')
 		const content = JSON.stringify(aseqs)
-		this.log.info(`Fetching information for ${genes.length} sequences from MiST3`)
+		this.log.info(`Fetching information for ${aseqs.length} sequences from MiST3`)
 		let buffer = []
 		return new Promise((resolve, reject) => {
 			const req = http.request(this.httpOptions, (res) => {
-				if (res.statusCode === 400)
+				if (res.statusCode === 400) {
 					reject(res)
-				if (res.statusCode !== 200)
+					return
+				}
+				if (res.statusCode !== 200) {
 					reject(res)
+					return
+				}
 				res.on('data', (data) => {
 					buffer.push(data)
 				})
 				res.on('error', reject)
 				res.on('end', () => {
-					this.log.info('All set')
+					this.log.info('Aseq retrieved')
 					const items = JSON.parse(Buffer.concat(buffer))
 					const final = []
-					genes.forEach((gene) => {
-						gene.ai = items.filter((item) => {
-							return gene.aseq_id === item.id
-						})[0]
-					})
-					resolve(genes)
+					resolve(items)
 				})
 			})
 			req.write(content)
