@@ -55,6 +55,11 @@ describe('Genes', function() {
 				})
 			})
 		})
+		it('should be rejected with invalid stable id', function() {
+			const genes = new Genes()
+			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'xxxGCF_000302455.1-A994_RS00010']
+			return genes.infoAll(geneVersions).should.be.rejectedWith('Not Found')
+		})
 		it('should pass with bunch', function() {
 			this.timeout(14000)
 			const genes = new Genes()
@@ -245,6 +250,13 @@ describe('Genes', function() {
 					console.log(err)
 				})
 		})
+		it('should should be rejected with invalid stable id', function() {
+			const genes = new Genes()
+			const stableId = 'xxGCF_000302455.1-A994_RS00140'
+			const upstream = 2
+			const downstream = 4
+			return genes.getGeneHood(stableId, upstream, downstream).should.be.rejectedWith('Not Found')
+		})
 	})
 	describe('addAseqInfo', function() {
 		it('should pass', function() {
@@ -262,12 +274,7 @@ describe('Genes', function() {
 			const geneVersion = 'GCF_000302455.1-A994_RS01985'
 			return genes.info(geneVersion).then((gene) => {
 				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
-				return genes.addAseqInfo([gene], {keepGoing: false}).then((result) => {
-					expect(0, 'This should not have passed').eql(1)
-				})
-					.catch((err) => {
-						expect(err).eql('Aseq wTCio8ibKOlaJ_LDGhkSVA not found')
-					})
+				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('Aseq wTCio8ibKOlaJ_LDGhkSVA not found')
 			})
 		})
 		it('should warns if gene is not found and asked to not throw error in options', function() {

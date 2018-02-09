@@ -121,6 +121,9 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			Promise.all(queries).then((results) => {
 				resolve(results)
+			}).catch((err) => {
+				this.log.error(err)
+				reject(err)
 			})
 		})
 	}
@@ -195,27 +198,31 @@ class Genes extends NodeMist3 {
 
 	getGeneHood(stableId, downstream = kDefaults.downstream, upstream = kDefaults.upstream) {
 		return new Promise((resolve, reject) => {
-			this.info(stableId).then((mainGeneInfo) => {
-				this.log.info(`Info from reference gene acquired: ${mainGeneInfo.aseq_id}`)
-				this.httpOptions.method = 'GET'
-				this.httpOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
-				const req = http.request(this.httpOptions, (res) => {
-					const chunks = []
-					res.on('data', (chunk) => {
-						chunks.push(chunk)
+			this.info(stableId)
+				.then((mainGeneInfo) => {
+					this.log.info(`Info from reference gene acquired: ${mainGeneInfo.aseq_id}`)
+					this.httpOptions.method = 'GET'
+					this.httpOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
+					const req = http.request(this.httpOptions, (res) => {
+						const chunks = []
+						res.on('data', (chunk) => {
+							chunks.push(chunk)
+						})
+						res.on('end', () => {
+							this.log.info('Got info from gene neighborhood. Parsing.')
+							const geneHood = JSON.parse(Buffer.concat(chunks))
+							geneHood.splice(upstream, 0, mainGeneInfo)
+							resolve(geneHood)
+						})
+						res.on('error', (err) => {
+							reject(err)
+						})
 					})
-					res.on('end', () => {
-						this.log.info('Got info from gene neighborhood. Parsing.')
-						const geneHood = JSON.parse(Buffer.concat(chunks))
-						geneHood.splice(upstream, 0, mainGeneInfo)
-						resolve(geneHood)
-					})
-					res.on('error', (err) => {
-						reject(err)
-					})
+					req.end()
 				})
-				req.end()
-			})
+				.catch((err) => {
+					reject(err)
+				})
 		})
 	}
 }
