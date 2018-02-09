@@ -221,7 +221,7 @@ class Genes extends NodeMist3 {
 					req.end()
 				})
 				.catch((err) => {
-					reject(err)
+					reject(Error(err))
 				})
 		})
 	}
