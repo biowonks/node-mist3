@@ -55,6 +55,11 @@ describe('Genes', function() {
 				})
 			})
 		})
+		it.only('should be rejected with invalid stable id', function() {
+			const genes = new Genes()
+			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'xxxGCF_000302455.1-A994_RS00010']
+			return genes.infoAll(geneVersions).should.be.rejectedWith(Error)
+		})
 		it('should pass with bunch', function() {
 			this.timeout(14000)
 			const genes = new Genes()

@@ -121,6 +121,9 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			Promise.all(queries).then((results) => {
 				resolve(results)
+			}).catch((err) => {
+				this.log.error(err)
+				reject(err)
 			})
 		})
 	}
