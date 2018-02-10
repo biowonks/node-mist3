@@ -122,21 +122,21 @@ class Genes extends NodeMist3 {
 			Promise.all(queries).then((results) => {
 				resolve(results)
 			}).catch((err) => {
-				this.log.error(err)
 				reject(err)
 			})
 		})
 	}
 
-	info(stableID) {
+	info(stableId) {
 		return new Promise((resolve, reject) => {
 			this.httpOptions.method = 'GET'
-			this.httpOptions.path = '/v1/genes/' + stableID
-			this.log.info('Fetching gene information from MiST3 : ' + stableID)
-			const req = http.request(this.httpOptions, function(res) {
+			this.httpOptions.path = '/v1/genes/' + stableId
+			this.log.info('Fetching gene information from MiST3 : ' + stableId)
+			const req = http.request(this.httpOptions, (res) => {
 				const chunks = []
 				if (res.statusCode === 404) {
-					reject(Error(res.statusMessage))
+					this.log.error(`${stableId} ${res.statusMessage}`)
+					reject(Error(`${stableId} ${res.statusMessage}`))
 					return
 				}
 				res.on('data', function(chunk) {
