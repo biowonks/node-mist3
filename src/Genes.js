@@ -13,7 +13,7 @@ const kDefaults = {
 
 module.exports =
 class Genes extends NodeMist3 {
-	constructor(logLevel = 'info', options) {
+	constructor(options, logLevel = 'info') {
 		super(options)
 		this.log = bunyan.createLogger(
 			{
@@ -221,7 +221,7 @@ class Genes extends NodeMist3 {
 					req.end()
 				})
 				.catch((err) => {
-					reject(Error(err))
+					reject(err)
 				})
 		})
 	}
