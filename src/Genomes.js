@@ -7,7 +7,7 @@ const NodeMist3 = require('./NodeMist3Abstract')
 
 module.exports =
 class Genomes extends NodeMist3 {
-	constructor(logLevel = 'info', options) {
+	constructor(options, logLevel = 'info') {
 		super(options)
 		this.log = bunyan.createLogger(
 			{
