@@ -246,9 +246,15 @@ describe('Genes', function() {
 			return genes.getGeneHood(stableId, upstream, downstream).then((items) => {
 				expect(items.length).eql(upstream + downstream + 1)
 			})
-				.catch((err) => {
-					console.log(err)
-				})
+		})
+		it('should pass with any stable ID', function() {
+			const genes = new Genes()
+			const stableId = 'GCF_000006765.1-PA1105'
+			const upstream = 2
+			const downstream = 4
+			return genes.getGeneHood(stableId, upstream, downstream).then((items) => {
+				expect(items.length).eql(upstream + downstream + 1)
+			})
 		})
 		it('should should be rejected with invalid stable id', function() {
 			const genes = new Genes()
@@ -264,7 +270,7 @@ describe('Genes', function() {
 			const geneVersion = 'GCF_000302455.1-A994_RS01985'
 			return genes.info(geneVersion).then((gene) => {
 				return genes.addAseqInfo([gene]).then((result) => {
-					expect(result[0].ai).to.not.be.undefined
+					expect(result[0].ai).to.not.be.null
 					expect(result.length).eql(1)
 				})
 			})
@@ -274,7 +280,25 @@ describe('Genes', function() {
 			const geneVersion = 'GCF_000302455.1-A994_RS01985'
 			return genes.info(geneVersion).then((gene) => {
 				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
-				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('Aseq wTCio8ibKOlaJ_LDGhkSVA not found')
+				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('not found')
+			})
+		})
+		it('should reject if aseq is null', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = null
+				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('has null aseq')
+			})
+		})
+		it('should pass (with warning) null if aseq_id is null and told to keep going', function() {
+			const genes = new Genes()
+			const geneVersion = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(geneVersion).then((gene) => {
+				gene.aseq_id = null
+				return genes.addAseqInfo([gene], {keepGoing: true}).then((results) => {
+					expect(results[0].ai).to.be.null
+				})
 			})
 		})
 		it('should warns if gene is not found and asked to not throw error in options', function() {
@@ -285,10 +309,19 @@ describe('Genes', function() {
 				return genes.addAseqInfo([gene], {keepGoing: true}).then((results) => {
 					expect(results[0].ai).to.be.undefined
 				})
-					.catch((err) => {
-						console.log(err.message)
-						expect(err, 'This should have passed').to.be.undefined
+			})
+		})
+		it('should pass with bunch even if one is null any stable ID', function() {
+			const genes = new Genes()
+			const stableId = 'GCF_000006765.1-PA1105'
+			const upstream = 10
+			const downstream = 10
+			return genes.getGeneHood(stableId, upstream, downstream).then((items) => {
+				items.forEach((item) => {
+					return genes.addAseqInfo(items, {keepGoing: true}).then((result) => {
+						expect(result.length).eql(upstream + downstream + 1)
 					})
+				})
 			})
 		})
 		it('should pass with bunch', function() {
@@ -310,10 +343,6 @@ describe('Genes', function() {
 				return genes.addAseqInfo(geneList).then((geneWithAseqInfoList) => {
 					expect(geneWithAseqInfoList.length).eql(stableIds.length)
 				})
-					.catch((err) => {
-						console.log(err)
-						throw new Error('It was not supposed to fail')
-					})
 			})
 		})
 	})

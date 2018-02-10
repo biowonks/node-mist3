@@ -29,7 +29,8 @@ class Genes extends NodeMist3 {
 			const aseqs = []
 
 			genes.forEach((gene) => {
-				aseqs.push(gene.aseq_id)
+				if (gene.aseq_id)
+					aseqs.push(gene.aseq_id)
 			})
 
 			const unique = aseqs.filter((v, i, a) => {
@@ -50,24 +51,29 @@ class Genes extends NodeMist3 {
 				aseqBatches.forEach((aseqBatch) => {
 					aseqInfo = aseqInfo.concat(aseqBatch)
 				})
-				try {
-					genes.forEach((gene) => {
+				genes.forEach((gene) => {
+					if (gene.aseq_id) {
 						gene.ai = aseqInfo.filter((item) => {
 							return gene.aseq_id === item.id
 						})[0]
 						if (!gene.ai) {
 							this.log.warn(`Aseq ${gene.aseq_id} not found`)
 							if (options.keepGoing === false) {
+								this.log.error(`Aseq ${gene.aseq_id} not found`)
 								throw Error(`Aseq ${gene.aseq_id} not found`)
 							}
 						}
-					})
-					resolve(genes)
-				}
-				catch (err) {
-					console.log('sdass')
-					reject(err.message)
-				}
+					}
+					else {
+						if (options.keepGoing === false) {
+							this.log.error(`Gene ${gene.stable_id} has null aseq`)
+							throw Error(`Gene ${gene.stable_id} has null aseq`)
+						}
+						this.log.warn(`Gene ${gene.stable_id} has null aseq`)
+						gene.ai = null
+					}
+				})
+				resolve(genes)
 			})
 				.catch((err) => {
 					reject(err)
@@ -90,11 +96,10 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			const req = http.request(this.httpOptions, (res) => {
 				if (res.statusCode === 400) {
-					reject(res)
-					return
+					buffer.push(Buffer.from([null]))
 				}
 				if (res.statusCode !== 200) {
-					reject(res)
+					reject(res.statusMessage)
 					return
 				}
 				res.on('data', (data) => {
