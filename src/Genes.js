@@ -123,7 +123,7 @@ class Genes extends NodeMist3 {
 				resolve(results)
 			}).catch((err) => {
 				this.log.error(err)
-				reject(err)
+				reject(Error(err))
 			})
 		})
 	}
@@ -221,7 +221,7 @@ class Genes extends NodeMist3 {
 					req.end()
 				})
 				.catch((err) => {
-					reject(err)
+					reject(Error(err))
 				})
 		})
 	}
