@@ -4,7 +4,13 @@ const stream = require('stream')
 const through2 = require('through2')
 const fs = require('fs')
 
-const expect = require('chai').expect
+const chai = require('chai')
+const chaiAsPromised = require('chai-as-promised')
+
+chai.use(chaiAsPromised)
+
+const expect = chai.expect
+const should = chai.should()
 const Genes = require('./Genes')
 
 describe('Genes', function() {
@@ -28,12 +34,15 @@ describe('Genes', function() {
 				expect(item.stable_id).eql(geneVersion)
 			})
 		})
-		it.skip('should throw error when fed with invalid id', function() {
+		it('should throw error when fed with invalid id', function() {
 			const genes = new Genes()
 			const geneVersion = 'GCF_000302455.1-A994_RS0198'
-			return genes.info(geneVersion).then((item) => {
-				expect(item.stable_id).eql(geneVersion)
-			})
+			return genes.info(geneVersion).should.be.rejectedWith(Error)
+		})
+		it.skip('should throw error when fed with empty id', function() {
+			const genes = new Genes()
+			const geneVersion = ''
+			return genes.info(geneVersion).should.be.rejectedWith(Error)
 		})
 	})
 	describe('infoAll', function() {

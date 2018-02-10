@@ -11,10 +11,12 @@ const fastaTagDefaults = {
 
 module.exports =
 class MakeFasta {
-	constructor(genomeInfo) {
+	constructor(genomeInfo, logLevel = 'info') {
 		this.genomeInfo_ = genomeInfo
 		this.log = bunyan.createLogger({
-			name: 'MakeFasta'
+			name: 'MakeFasta',
+			level: logLevel
+
 		})
 	}
 

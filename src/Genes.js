@@ -13,11 +13,12 @@ const kDefaults = {
 
 module.exports =
 class Genes extends NodeMist3 {
-	constructor(options) {
+	constructor(logLevel = 'info', options) {
 		super(options)
 		this.log = bunyan.createLogger(
 			{
-				name: 'node-mist3-genes'
+				name: 'node-mist3-genes',
+				level: logLevel
 			}
 		)
 	}
@@ -125,12 +126,16 @@ class Genes extends NodeMist3 {
 	}
 
 	info(stableID) {
-		this.httpOptions.method = 'GET'
-		this.httpOptions.path = '/v1/genes/' + stableID
 		return new Promise((resolve, reject) => {
+			this.httpOptions.method = 'GET'
+			this.httpOptions.path = '/v1/genes/' + stableID
 			this.log.info('Fetching gene information from MiST3 : ' + stableID)
 			const req = http.request(this.httpOptions, function(res) {
 				const chunks = []
+				if (res.statusCode === 404) {
+					reject(Error(res.statusMessage))
+					return
+				}
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
 				})
