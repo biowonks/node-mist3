@@ -1,12 +1,18 @@
 'use strict'
 
-const expect = require('chai').expect
+const chai = require('chai')
+const chaiAsPromised = require('chai-as-promised')
+
+chai.use(chaiAsPromised)
+
+const expect = chai.expect
+const should = chai.should()
 const Genes = require('./Genes')
 const Genomes = require('./Genomes')
 const MakeFasta = require('./MakeFasta')
 
 describe('MakeFasta', function() {
-	it('should pass testing individual elements', function(done) {
+	it('should pass testing individual elements', function() {
 		this.timeout(10000)
 		const expectedSequence = 'MITIIDYGSGNLKSIRNGFHHVGAEVLVTRDKEELKKADVMILPGVGAFGTAMENLKKYEDIIHQHIKDDKPFLGVCLGLQVLFSESEESPMIRGLDVFSGKVVRFPDTLLNDGLKIPHMGWNNLNIKQNSPLLEGIGSDYMYFVHSYYVRPDNEEVVMATVDYGVEVPAVVAQDNVYATQFHPEKSGEIGLEILKNFLRNVL'
 		const expectedHeader = 'Me_for|GCF_000302455.1-A994_RS01985'
@@ -14,9 +20,9 @@ describe('MakeFasta', function() {
 		const genes = new Genes()
 		const genomeVersion = 'GCF_000302455.1'
 		const geneVersion = 'GCF_000302455.1-A994_RS01985'
-		genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
+		return genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
 			const mkFasta = new MakeFasta(genomeInfo)
-			genes.info(geneVersion)
+			return genes.info(geneVersion)
 				.then((geneInfo) => {
 					return genes.addAseqInfo([geneInfo])
 				})
@@ -28,24 +34,20 @@ describe('MakeFasta', function() {
 						expect(header).eql(expectedHeader)
 						expect(sequence).eql(expectedSequence)
 					})
-					done()
-				})
-				.catch((err) => {
-					console.log(err)
 				})
 		})
 	})
 	describe('process', function() {
-		it('should pass', function(done) {
+		it('should pass', function() {
 			this.timeout(10000)
 			const expectedFastaEntry = '>Me_for|GCF_000302455.1-A994_RS01985\nMITIIDYGSGNLKSIRNGFHHVGAEVLVTRDKEELKKADVMILPGVGAFGTAMENLKKYEDIIHQHIKDDKPFLGVCLGLQVLFSESEESPMIRGLDVFSGKVVRFPDTLLNDGLKIPHMGWNNLNIKQNSPLLEGIGSDYMYFVHSYYVRPDNEEVVMATVDYGVEVPAVVAQDNVYATQFHPEKSGEIGLEILKNFLRNVL\n'
 			const genomes = new Genomes()
 			const genes = new Genes()
 			const genomeVersion = 'GCF_000302455.1'
 			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
+			return genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
 				const mkFasta = new MakeFasta(genomeInfo)
-				genes.info(geneVersion)
+				return genes.info(geneVersion)
 					.then((geneInfo) => {
 						return genes.addAseqInfo([geneInfo])
 					})
@@ -54,13 +56,45 @@ describe('MakeFasta', function() {
 					})
 					.then((fastaEntries) => {
 						expect(fastaEntries[0]).eql(expectedFastaEntry)
-						done()
-					})
-					.catch((err) => {
-						console.log(err)
 					})
 			})
 		})
-
+		it('should be rejected', function() {
+			this.timeout(10000)
+			const genomes = new Genomes()
+			const genes = new Genes()
+			const genomeVersion = 'GCF_000006765.1'
+			const geneVersion = 'GCF_000006765.1-PA1112.1'
+			return genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
+				const mkFasta = new MakeFasta(genomeInfo)
+				return genes.info(geneVersion)
+					.then((geneInfo) => {
+						return genes.addAseqInfo([geneInfo], {keepGoing: true})
+					})
+					.then((geneInfoList) => {
+						return mkFasta.process(geneInfoList)
+					}).should.be.rejectedWith('has no protein information or it is in wrong format.')
+			})
+		})
+		it('should pass but skip null sequence', function() {
+			this.timeout(10000)
+			const genomes = new Genomes()
+			const genes = new Genes()
+			const genomeVersion = 'GCF_000006765.1'
+			const geneVersion = 'GCF_000006765.1-PA1112.1'
+			return genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
+				const mkFasta = new MakeFasta(genomeInfo)
+				return genes.info(geneVersion)
+					.then((geneInfo) => {
+						return genes.addAseqInfo([geneInfo], {keepGoing: true})
+					})
+					.then((geneInfoList) => {
+						return mkFasta.process(geneInfoList, {skipNull: true})
+					})
+					.then((fastaEntries) => {
+						expect(fastaEntries.length).eql(0)
+					})
+			})
+		})
 	})
 })
