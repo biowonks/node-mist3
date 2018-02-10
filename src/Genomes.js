@@ -5,18 +5,14 @@ const bunyan = require('bunyan')
 
 const NodeMist3 = require('./NodeMist3Abstract')
 
-const kDefaults = {
-	downstream: 10,
-	upstream: 10
-}
-
 module.exports =
 class Genomes extends NodeMist3 {
-	constructor(options) {
+	constructor(logLevel = 'info', options) {
 		super(options)
 		this.log = bunyan.createLogger(
 			{
-				name: 'node-mist3-genomes'
+				name: 'node-mist3-genomes',
+				level: logLevel
 			}
 		)
 	}

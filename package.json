@@ -1,6 +1,10 @@
 {
   "name": "node-mist3",
+<<<<<<< HEAD
   "version": "1.4.0",
+=======
+  "version": "1.4.1",
+>>>>>>> master
   "description": "Helper package to deal with MiST3 API",
   "main": "src/index.js",
   "scripts": {
@@ -25,6 +29,7 @@
   "devDependencies": {
     "bunyan": "^1.8.12",
     "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
     "coveralls": "^3.0.0",
     "eslint": "^4.12.1",
     "mocha": "^4.0.1",
