@@ -20,19 +20,23 @@ class MakeFasta {
 		})
 	}
 
-	process(geneInfoList) {
+	process(geneInfoList, options = {skipNull: false}) {
 		let numEntries = 0
 		const fasta = []
 		geneInfoList.forEach((geneInfo) => {
-			if (geneInfo.ai.sequence) {
+			if (geneInfo.ai) {
 				const tag = this.generateTag_(geneInfo)
 				const sequence = geneInfo.ai.sequence
 				const entry = this.makeFastaEntry_(tag, sequence)
 				fasta.push(entry)
 				numEntries++
 			}
+			else if (options.skipNull) {
+				this.log.warn(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format. Skipping`)
+			}
 			else {
-				this.log.warn('No information on MiST3 for: ' + geneInfo.ai.id)
+				this.log.error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
+				throw Error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
 			}
 		})
 		this.log.info('Pushing ' + numEntries + ' fasta entries')
