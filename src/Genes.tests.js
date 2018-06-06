@@ -14,13 +14,13 @@ const should = chai.should()
 const Genes = require('./Genes')
 
 describe('Genes', function() {
-	describe('byGenomes', function() {
+	describe('byGenomeVersion', function() {
 		it('should pass', function() {
 			this.timeout(14000)
 			const genes = new Genes()
 			const expectedNumberOfGenes = 736
 			const genome = 'GCF_000701865.1' // 'GCF_000006765.1'
-			return genes.byGenome(genome).then((items) => {
+			return genes.byGenomeVersion(genome).then((items) => {
 				expect(items.length).eql(expectedNumberOfGenes)
 			})
 		})
@@ -29,41 +29,41 @@ describe('Genes', function() {
 	describe('info', function() {
 		it('should pass', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((item) => {
-				expect(item.stable_id).eql(geneVersion)
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((item) => {
+				expect(item.stable_id).eql(stableId)
 			})
 		})
 		it('should throw error when fed with invalid id', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS0198'
-			return genes.info(geneVersion).should.be.rejectedWith(Error)
+			const stableId = 'GCF_000302455.1-A994_RS0198'
+			return genes.info(stableId).should.be.rejectedWith(Error)
 		})
 		it.skip('should throw error when fed with empty id', function() {
 			const genes = new Genes()
-			const geneVersion = ''
-			return genes.info(geneVersion).should.be.rejectedWith(Error)
+			const stableId = ''
+			return genes.info(stableId).should.be.rejectedWith(Error)
 		})
 	})
 	describe('infoAll', function() {
 		it('should pass', function() {
 			const genes = new Genes()
-			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00010']
-			return genes.infoAll(geneVersions).then((items) => {
+			const stableIds = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00010']
+			return genes.infoAll(stableIds).then((items) => {
 				items.forEach((item, i) => {
-					expect(item.stable_id).eql(geneVersions[i])
+					expect(item.stable_id).eql(stableIds[i])
 				})
 			})
 		})
 		it('should be rejected with invalid stable id', function() {
 			const genes = new Genes()
-			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'xxxGCF_000302455.1-A994_RS00010']
-			return genes.infoAll(geneVersions).should.be.rejectedWith('Not Found')
+			const stableIds = ['GCF_000302455.1-A994_RS01985', 'xxxGCF_000302455.1-A994_RS00010']
+			return genes.infoAll(stableIds).should.be.rejectedWith('Not Found')
 		})
 		it('should pass with bunch', function() {
 			this.timeout(14000)
 			const genes = new Genes()
-			const geneVersions = [
+			const stableIds = [
 				'GCF_000006765.1-PA1072',
 				'GCF_000006765.1-PA1073',
 				'GCF_000006765.1-PA1074',
@@ -230,9 +230,9 @@ describe('Genes', function() {
 				'GCF_000196175.1-BD_RS15605',
 				'GCF_000196175.1-BD_RS15610'
 			]
-			return genes.infoAll(geneVersions).then((items) => {
+			return genes.infoAll(stableIds).then((items) => {
 				items.forEach((item, i) => {
-					expect(item.stable_id).eql(geneVersions[i])
+					expect(item.stable_id).eql(stableIds[i])
 				})
 			})
 		})
@@ -267,8 +267,8 @@ describe('Genes', function() {
 	describe('addAseqInfo', function() {
 		it('should pass', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((gene) => {
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((gene) => {
 				return genes.addAseqInfo([gene]).then((result) => {
 					expect(result[0].ai).to.not.be.null
 					expect(result.length).eql(1)
@@ -277,24 +277,24 @@ describe('Genes', function() {
 		})
 		it('should reject if gene is not found', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((gene) => {
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((gene) => {
 				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
 				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('not found')
 			})
 		})
 		it('should reject if aseq is null', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((gene) => {
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((gene) => {
 				gene.aseq_id = null
 				return genes.addAseqInfo([gene], {keepGoing: false}).should.be.rejectedWith('has null aseq')
 			})
 		})
 		it('should pass (with warning) null if aseq_id is null and told to keep going', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((gene) => {
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((gene) => {
 				gene.aseq_id = null
 				return genes.addAseqInfo([gene], {keepGoing: true}).then((results) => {
 					expect(results[0].ai).to.be.null
@@ -303,8 +303,8 @@ describe('Genes', function() {
 		})
 		it('should warns if gene is not found and asked to not throw error in options', function() {
 			const genes = new Genes()
-			const geneVersion = 'GCF_000302455.1-A994_RS01985'
-			return genes.info(geneVersion).then((gene) => {
+			const stableId = 'GCF_000302455.1-A994_RS01985'
+			return genes.info(stableId).then((gene) => {
 				gene.aseq_id = 'wTCio8ibKOlaJ_LDGhkSVA'
 				return genes.addAseqInfo([gene], {keepGoing: true}).then((results) => {
 					expect(results[0].ai).to.be.undefined

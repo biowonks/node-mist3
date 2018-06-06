@@ -57,10 +57,12 @@ class Genes extends NodeMist3 {
 							return gene.aseq_id === item.id
 						})[0]
 						if (!gene.ai) {
-							this.log.warn(`Aseq ${gene.aseq_id} not found`)
 							if (options.keepGoing === false) {
 								this.log.error(`Aseq ${gene.aseq_id} not found`)
 								throw Error(`Aseq ${gene.aseq_id} not found`)
+							}
+							else {
+								this.log.warn(`Aseq ${gene.aseq_id} not found`)
 							}
 						}
 					}
@@ -157,12 +159,12 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	byGenome(version) {
+	byGenomeVersion(version) {
 		const allGenes = []
 		let page = 1
 		const getGenes = (v, p) => {
 			return new Promise((resolve, rejectg) => {
-				this.byGenomePerPage(v, p)
+				this.byGenomeVersionPerPage(v, p)
 					.then((newGenes) => {
 						if (newGenes.length !== 0) {
 							newGenes.forEach((gene) => {
@@ -180,7 +182,7 @@ class Genes extends NodeMist3 {
 		return getGenes(version, page)
 	}
 
-	byGenomePerPage(version, page = 1) {
+	byGenomeVersionPerPage(version, page = 1) {
 		const genes = []
 		const genesPerPage = 100
 		this.httpOptions.method = 'GET'

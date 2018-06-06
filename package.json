@@ -33,6 +33,7 @@
     "nyc": "^11.3.0"
   },
   "dependencies": {
+    "figlet": "^1.2.0",
     "through2": "^2.0.3"
   }
 }
