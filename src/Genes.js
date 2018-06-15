@@ -148,8 +148,14 @@ class Genes extends NodeMist3 {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					const allChunks = Buffer.concat(chunks)
+					try {
+						const newGenes = JSON.parse(allChunks)
+						resolve(newGenes)
+					}
+					catch {
+						reject(newGenes)
+					}
 				})
 				res.on('error', reject)
 			})
