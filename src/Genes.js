@@ -153,8 +153,8 @@ class Genes extends NodeMist3 {
 						const newGenes = JSON.parse(allChunks)
 						resolve(newGenes)
 					}
-					catch {
-						reject(newGenes)
+					catch (err) {
+						reject(allChunks)
 					}
 				})
 				res.on('error', reject)
