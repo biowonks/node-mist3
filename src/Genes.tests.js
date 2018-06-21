@@ -18,7 +18,7 @@ describe('Genes', function() {
 		it('should pass', function() {
 			this.timeout(14000)
 			const genes = new Genes()
-			const expectedNumberOfGenes = 736
+			const expectedNumberOfGenes = 741
 			const genome = 'GCF_000701865.1' // 'GCF_000006765.1'
 			return genes.byGenome(genome).then((items) => {
 				expect(items.length).eql(expectedNumberOfGenes)
@@ -61,7 +61,7 @@ describe('Genes', function() {
 			return genes.infoAll(geneVersions).should.be.rejectedWith('Not Found')
 		})
 		it('should pass with bunch', function() {
-			this.timeout(14000)
+			this.timeout(20000)
 			const genes = new Genes()
 			const geneVersions = [
 				'GCF_000006765.1-PA1072',

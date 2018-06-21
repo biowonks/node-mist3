@@ -1,6 +1,6 @@
 'use strict'
 
-const http = require('http')
+const https = require('https')
 const bunyan = require('bunyan')
 
 const NodeMist3 = require('./NodeMist3Abstract')
@@ -18,14 +18,14 @@ class Genomes extends NodeMist3 {
 	}
 
 	getGenomeInfoByVersion(version) {
-		this.httpOptions.method = 'GET'
-		this.httpOptions.path = '/v1/genomes/' + version
-		this.httpOptions.method = 'GET'
-		this.httpOptions.header = {}
+		this.httpsOptions.method = 'GET'
+		this.httpsOptions.path = '/v1/genomes/' + version
+		this.httpsOptions.method = 'GET'
+		this.httpsOptions.header = {}
 		return new Promise((resolve, reject) => {
 			this.log.info('Fetching info from genome: ' + version)
 			const self = this
-			const req = http.request(this.httpOptions, function(res) {
+			const req = https.request(this.httpsOptions, function(res) {
 				const chunks = []
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
