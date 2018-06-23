@@ -189,7 +189,7 @@ class Genes extends NodeMist3 {
 		const allGenes = []
 		let page = 1
 		const getGenes = (v, p) => {
-			return new Promise((resolve, rejectg) => {
+			return new Promise((resolve, reject) => {
 				this.byGenomePerPage(v, p)
 					.then((newGenes) => {
 						if (newGenes.length !== 0) {
@@ -202,7 +202,7 @@ class Genes extends NodeMist3 {
 						else {
 							resolve(allGenes)
 						}
-					})
+					}).catch(reject)
 			})
 		}
 		return getGenes(version, page)
@@ -211,19 +211,36 @@ class Genes extends NodeMist3 {
 	byGenomePerPage(version, page = 1) {
 		const genes = []
 		const genesPerPage = 100
+		const self = this
 		this.httpsOptions.method = 'GET'
 		this.httpsOptions.path = '/v1/genomes/' + version + '/genes?per_page=' + genesPerPage + '&page=' + page
 		return new Promise((resolve, reject) => {
-			this.log.info('Fetching genes from MiST3 : ' + version + ' page ' + page)
+			self.log.info('Fetching genes from MiST3 : ' + version + ' page ' + page)
 			const req = https.request(this.httpsOptions, function(res) {
+				if (res.statusCode === 504) {
+					self.log.error(`${res.statusCode} - ${res.statusMessage}`)
+					return reject(res.statusCode)
+				}
 				const chunks = []
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					let newGenes = ''
+					const buffer = Buffer.concat(chunks)
+					try {
+						newGenes = JSON.parse(buffer)
+						resolve(newGenes)
+					}
+					catch(err) {
+						self.log.error(buffer.toString())
+						reject(err)
+					}
 				})
+				req.on('error', function(err) {
+					// This is not a "Second reject", just a different sort of failure
+					reject(err);
+				});
 			})
 			req.end()
 		})

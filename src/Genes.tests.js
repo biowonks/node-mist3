@@ -24,6 +24,12 @@ describe('Genes', function() {
 				expect(items.length).eql(expectedNumberOfGenes)
 			})
 		})
+		it('should fail with 504', function() {
+			const genes = new Genes()
+			const expectedNumberOfGenes = 741
+			const genome = 'GCF_001889065.1' // 'GCF_000006765.1'
+			return genes.byGenome(genome).should.be.rejected
+		})
 		it('must fail is passed invalid version')
 	})
 	describe('info', function() {
