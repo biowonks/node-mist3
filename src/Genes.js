@@ -8,7 +8,9 @@ const NodeMist3 = require('./NodeMist3Abstract')
 const kDefaults = {
 	downstream: 10,
 	upstream: 10,
-	maxAseqs: 1000
+	maxAseqs: 1000,
+	maxInfo: 250,
+	maxTries: 2
 }
 
 module.exports =
@@ -100,7 +102,6 @@ class Genes extends NodeMist3 {
 				}
 				if (res.statusCode !== 200) {
 					reject(res.statusMessage)
-					return
 				}
 				res.on('data', (data) => {
 					buffer.push(data)
@@ -118,31 +119,47 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	infoAll(geneList) {
-		const queries = []
-		geneList.forEach((stableId) => {
-			queries.push(this.info(stableId))
+	infoAll(geneList, options={keepGoing: false}) {
+		const self = this
+		const newList = []
+		geneList.forEach((item) => {
+			newList.push(item)
 		})
-		return new Promise((resolve, reject) => {
-			Promise.all(queries).then((results) => {
-				resolve(results)
-			}).catch((err) => {
-				reject(err)
-			})
-		})
+		async function asyncInfo (list) {
+			const data = []
+			while (list.length !== 0) {
+				const queries = []
+				const geneBatch = list.splice(0, kDefaults.maxInfo)
+				geneBatch.forEach((stableId) => {
+					queries.push(self.info(stableId, options))
+				})
+				await Promise.all(queries).then((results) => {
+						results.forEach((item) => {
+							data.push(item)
+						})
+					}).catch((err) => {
+						throw err
+					})
+			}
+			return data			
+		}
+		return asyncInfo(newList)
 	}
 
-	info(stableId) {
+	info(stableId, options={keepGoing: false}, tries = 0) {
 		return new Promise((resolve, reject) => {
 			this.httpsOptions.method = 'GET'
 			this.httpsOptions.path = '/v1/genes/' + stableId
-			this.log.info('Fetching gene information from MiST3 : ' + stableId)
+			this.log.info(`Fetching gene information from MiST3 : ${stableId} | ${tries}`)
 			const req = https.request(this.httpsOptions, (res) => {
+				this.log.debug(`Information received for ${stableId}`)
 				const chunks = []
 				if (res.statusCode === 404) {
 					this.log.error(`${stableId} ${res.statusMessage}`)
-					reject(Error(`${stableId} ${res.statusMessage}`))
-					return
+					if (options.keepGoing)
+						resolve({})
+					else
+						reject(Error(`${stableId} ${res.statusMessage}`))
 				}
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
@@ -152,6 +169,17 @@ class Genes extends NodeMist3 {
 					resolve(newGenes)
 				})
 				res.on('error', reject)
+			})
+			req.on('error', (err) => {
+				this.log.warn(`Error on request: ${stableId}`)
+				if (tries < kDefaults.maxTries) {
+					this.log.warn(`trying again: ${tries + 1}`)
+					resolve(this.info(stableId, options, tries + 1))
+					return
+				}
+				console.log('Here')
+				this.log.fatal(`Error on request: ${stableId}`)
+				throw err
 			})
 			req.end()
 		})

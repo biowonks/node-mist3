@@ -14,9 +14,9 @@ const should = chai.should()
 const Genes = require('./Genes')
 
 describe('Genes', function() {
+	this.timeout(1200000)
 	describe('byGenomes', function() {
 		it('should pass', function() {
-			this.timeout(14000)
 			const genes = new Genes()
 			const expectedNumberOfGenes = 741
 			const genome = 'GCF_000701865.1' // 'GCF_000006765.1'
@@ -48,7 +48,7 @@ describe('Genes', function() {
 	describe('infoAll', function() {
 		it('should pass', function() {
 			const genes = new Genes()
-			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00010']
+			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00015']
 			return genes.infoAll(geneVersions).then((items) => {
 				items.forEach((item, i) => {
 					expect(item.stable_id).eql(geneVersions[i])
@@ -61,7 +61,6 @@ describe('Genes', function() {
 			return genes.infoAll(geneVersions).should.be.rejectedWith('Not Found')
 		})
 		it('should pass with bunch', function() {
-			this.timeout(20000)
 			const genes = new Genes()
 			const geneVersions = [
 				'GCF_000006765.1-PA1072',
@@ -336,11 +335,11 @@ describe('Genes', function() {
 			})
 		})
 		it('should pass even if it is way too many', function() {
-			this.timeout(30000)
 			const genes = new Genes()
+			const options = {keepGoing: true}
 			const stableIds = JSON.parse(fs.readFileSync('./data-test/stableIds.3398.json'))
-			return genes.infoAll(stableIds).then((geneList) => {
-				return genes.addAseqInfo(geneList).then((geneWithAseqInfoList) => {
+			return genes.infoAll(stableIds, options).then((geneList) => {
+				return genes.addAseqInfo(geneList, options).then((geneWithAseqInfoList) => {
 					expect(geneWithAseqInfoList.length).eql(stableIds.length)
 				})
 			})
@@ -348,7 +347,6 @@ describe('Genes', function() {
 	})
 	describe('Integration', function() {
 		describe('getGeneHood and addAseqInfo', function() {
-			this.timeout(14000)
 			it('should pass', function(done) {
 				const genes = new Genes()
 				const stableIds = [
