@@ -20,7 +20,6 @@ class Genomes extends NodeMist3 {
 	getGenomeInfoByVersion(version) {
 		this.httpsOptions.method = 'GET'
 		this.httpsOptions.path = '/v1/genomes/' + version
-		this.httpsOptions.method = 'GET'
 		this.httpsOptions.header = {}
 		return new Promise((resolve, reject) => {
 			this.log.info('Fetching info from genome: ' + version)
@@ -37,6 +36,21 @@ class Genomes extends NodeMist3 {
 				})
 			})
 			req.end()
+		})
+	}
+
+	getInfoAll() {
+		const infoAllGenomes = []
+		this.httpsOptions.method = 'GET'
+		return new Promise((resolve, reject) => {
+			const per_page = 100
+			let page = 1
+			const morePages = true
+
+			this.httpsOptions.path = '/v1/genomes/' +
+			
+			
+			resolve(infoAllGenomes)
 		})
 	}
 }
