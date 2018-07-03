@@ -40,17 +40,70 @@ class Genomes extends NodeMist3 {
 	}
 
 	getInfoAll() {
-		const infoAllGenomes = []
+		const self = this
+		const per_page = 100
 		this.httpsOptions.method = 'GET'
-		return new Promise((resolve, reject) => {
+		const getOnePage = (page) => { 
+			self.httpsOptions.path = `/v1/genomes?per_page=${per_page}&page=${page}`
+			const chunks = []
+			return new Promise((resolve, reject) => {
+				const req = https.request(self.httpsOptions, (res) => {
+					if (res.statusCode === 400) {
+						buffer.push(Buffer.from([null]))
+					}
+					if (res.statusCode !== 200) {
+						reject(res.statusMessage)
+					}
+					res.on('data', function(chunk) {
+						chunks.push(chunk)
+					})
+					res.on('end', function() {
+						let newGenes = ''
+						const buffer = Buffer.concat(chunks)
+						try {
+							newGenes = JSON.parse(buffer)
+							resolve(newGenes)
+						}
+						catch(err) {
+							self.log.error(buffer.toString())
+							reject(err)
+						}
+					})
+				})
+				req.end()
+			})	
+		}
+		async function getAll() {
 			const per_page = 100
+			const infoAllGenomes = []
 			let page = 1
-			const morePages = true
-
-			this.httpsOptions.path = '/v1/genomes/' +
-			
-			
-			resolve(infoAllGenomes)
+			let maxIterations = 1000
+			let morePages = true
+			while (morePages === true && maxIterations > 0) {
+				self.log.debug(`Requesting page ${page}`)
+				await getOnePage(page).then(function(data) {
+					self.log.debug(`Page ${page} received`)
+					if (data.length !== 0) {
+ 						data.forEach((genome) => {
+							infoAllGenomes.push(genome)
+						})
+						page++
+					}
+					else {
+						morePages = false
+					}
+				})
+				.catch((err) => {
+					morePages = false
+					throw err
+				})
+				maxIterations--
+			}
+			return infoAllGenomes
+		}
+		return getAll().then((allInfo) => {
+			this.log.debug('Done fetching genomes')
+			return allInfo
 		})
 	}
 }
