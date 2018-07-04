@@ -10,9 +10,4 @@ const should = chai.should()
 
 const NodeMist3Abstract = require('./NodeMist3Abstract')
 
-describe.only('NodeMist3Abstract', function() {
-	it('init should work', function() {
-		const abstract = new NodeMist3Abstract()
-		return abstract.init()
-	})
-})
+describe.skip('NodeMist3Abstract')

@@ -1,6 +1,6 @@
 'use strict'
 
-const http = require('http')
+const https = require('https')
 const bunyan = require('bunyan')
 
 const NodeMist3 = require('./NodeMist3Abstract')
@@ -85,9 +85,9 @@ class Genes extends NodeMist3 {
 
 	getAseqInfoBatch(aseqs = [], options = {throwError: true}) {
 		this.log.info(`Fetching Aseq Info from MiST3`)
-		this.httpOptions.method = 'POST'
-		this.httpOptions.path = '/v1/aseqs'
-		this.httpOptions.headers = {
+		this.httpsOptions.method = 'POST'
+		this.httpsOptions.path = '/v1/aseqs'
+		this.httpsOptions.headers = {
 			'Content-Type': 'application/json'
 		}
 		if (aseqs.length > kDefaults.maxAseqs)
@@ -96,7 +96,7 @@ class Genes extends NodeMist3 {
 		this.log.info(`Fetching information for ${aseqs.length} sequences from MiST3`)
 		let buffer = []
 		return new Promise((resolve, reject) => {
-			const req = http.request(this.httpOptions, (res) => {
+			const req = https.request(this.httpsOptions, (res) => {
 				if (res.statusCode === 400) {
 					buffer.push(Buffer.from([null]))
 				}
@@ -136,10 +136,10 @@ class Genes extends NodeMist3 {
 
 	info(stableId) {
 		return new Promise((resolve, reject) => {
-			this.httpOptions.method = 'GET'
-			this.httpOptions.path = '/v1/genes/' + stableId
+			this.httpsOptions.method = 'GET'
+			this.httpsOptions.path = '/v1/genes/' + stableId
 			this.log.info('Fetching gene information from MiST3 : ' + stableId)
-			const req = http.request(this.httpOptions, (res) => {
+			const req = https.request(this.httpsOptions, (res) => {
 				const chunks = []
 				if (res.statusCode === 404) {
 					this.log.error(`${stableId} ${res.statusMessage}`)
@@ -150,8 +150,15 @@ class Genes extends NodeMist3 {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					const allChunks = Buffer.concat(chunks)
+					try {
+						const newGenes = JSON.parse(allChunks)
+						resolve(newGenes)
+					}
+					catch (err) {
+						console.log(allChunks.toString())
+						reject(allChunks)
+					}
 				})
 				res.on('error', reject)
 			})
@@ -185,11 +192,11 @@ class Genes extends NodeMist3 {
 	byGenomeVersionPerPage(version, page = 1) {
 		const genes = []
 		const genesPerPage = 100
-		this.httpOptions.method = 'GET'
-		this.httpOptions.path = '/v1/genomes/' + version + '/genes?per_page=' + genesPerPage + '&page=' + page
+		this.httpsOptions.method = 'GET'
+		this.httpsOptions.path = '/v1/genomes/' + version + '/genes?per_page=' + genesPerPage + '&page=' + page
 		return new Promise((resolve, reject) => {
 			this.log.info('Fetching genes from MiST3 : ' + version + ' page ' + page)
-			const req = http.request(this.httpOptions, function(res) {
+			const req = https.request(this.httpsOptions, function(res) {
 				const chunks = []
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
@@ -208,9 +215,9 @@ class Genes extends NodeMist3 {
 			this.info(stableId)
 				.then((mainGeneInfo) => {
 					this.log.info(`Info from reference gene acquired: ${mainGeneInfo.aseq_id}`)
-					this.httpOptions.method = 'GET'
-					this.httpOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
-					const req = http.request(this.httpOptions, (res) => {
+					this.httpsOptions.method = 'GET'
+					this.httpsOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
+					const req = https.request(this.httpsOptions, (res) => {
 						const chunks = []
 						res.on('data', (chunk) => {
 							chunks.push(chunk)
