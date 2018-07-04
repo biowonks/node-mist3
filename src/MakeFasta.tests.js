@@ -11,9 +11,9 @@ const Genes = require('./Genes')
 const Genomes = require('./Genomes')
 const MakeFasta = require('./MakeFasta')
 
-describe.only('MakeFasta', function() {
+describe('MakeFasta', function() {
+	this.timeout(100000)
 	it('should pass testing individual elements', function() {
-		this.timeout(10000)
 		const expectedSequence = 'MITIIDYGSGNLKSIRNGFHHVGAEVLVTRDKEELKKADVMILPGVGAFGTAMENLKKYEDIIHQHIKDDKPFLGVCLGLQVLFSESEESPMIRGLDVFSGKVVRFPDTLLNDGLKIPHMGWNNLNIKQNSPLLEGIGSDYMYFVHSYYVRPDNEEVVMATVDYGVEVPAVVAQDNVYATQFHPEKSGEIGLEILKNFLRNVL'
 		const expectedHeader = 'Me_for|GCF_000302455.1-A994_RS01985'
 		const genomes = new Genomes()

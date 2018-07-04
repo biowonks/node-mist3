@@ -1,6 +1,5 @@
 'use strict'
 
-
 let httpsDefaultOptions = {
 	hostname: 'api.mistdb.caltech.edu',
 	headers: {},
