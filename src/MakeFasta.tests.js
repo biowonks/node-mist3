@@ -11,7 +11,7 @@ const Genes = require('./Genes')
 const Genomes = require('./Genomes')
 const MakeFasta = require('./MakeFasta')
 
-describe('MakeFasta', function() {
+describe.only('MakeFasta', function() {
 	it('should pass testing individual elements', function() {
 		this.timeout(10000)
 		const expectedSequence = 'MITIIDYGSGNLKSIRNGFHHVGAEVLVTRDKEELKKADVMILPGVGAFGTAMENLKKYEDIIHQHIKDDKPFLGVCLGLQVLFSESEESPMIRGLDVFSGKVVRFPDTLLNDGLKIPHMGWNNLNIKQNSPLLEGIGSDYMYFVHSYYVRPDNEEVVMATVDYGVEVPAVVAQDNVYATQFHPEKSGEIGLEILKNFLRNVL'
@@ -29,15 +29,15 @@ describe('MakeFasta', function() {
 				.then((geneInfoPlusList) => {
 					geneInfoPlusList.forEach((geneInfoPlus) => {
 						const header = mkFasta.generateTag_(geneInfoPlus)
-						const sequence = geneInfoPlus.ai.sequence
-						const fastaEntry = mkFasta.makeFastaEntry_(header, sequence)
+						const sequence = mkFasta.getSequence_(geneInfoPlus)
+						const fastaEntry = mkFasta.makeFastaEntry_(geneInfoPlus)
 						expect(header).eql(expectedHeader)
 						expect(sequence).eql(expectedSequence)
 					})
 				})
 		})
 	})
-	describe('process', function() {
+	describe('processMany', function() {
 		it('should pass', function() {
 			this.timeout(10000)
 			const expectedFastaEntry = '>Me_for|GCF_000302455.1-A994_RS01985\nMITIIDYGSGNLKSIRNGFHHVGAEVLVTRDKEELKKADVMILPGVGAFGTAMENLKKYEDIIHQHIKDDKPFLGVCLGLQVLFSESEESPMIRGLDVFSGKVVRFPDTLLNDGLKIPHMGWNNLNIKQNSPLLEGIGSDYMYFVHSYYVRPDNEEVVMATVDYGVEVPAVVAQDNVYATQFHPEKSGEIGLEILKNFLRNVL\n'
@@ -52,7 +52,7 @@ describe('MakeFasta', function() {
 						return genes.addAseqInfo([geneInfo])
 					})
 					.then((geneInfoList) => {
-						return mkFasta.process(geneInfoList)
+						return mkFasta.processMany(geneInfoList)
 					})
 					.then((fastaEntries) => {
 						expect(fastaEntries[0]).eql(expectedFastaEntry)
@@ -72,7 +72,7 @@ describe('MakeFasta', function() {
 						return genes.addAseqInfo([geneInfo], {keepGoing: true})
 					})
 					.then((geneInfoList) => {
-						return mkFasta.process(geneInfoList)
+						return mkFasta.processMany(geneInfoList)
 					}).should.be.rejectedWith('has no protein information or it is in wrong format.')
 			})
 		})
@@ -89,7 +89,7 @@ describe('MakeFasta', function() {
 						return genes.addAseqInfo([geneInfo], {keepGoing: true})
 					})
 					.then((geneInfoList) => {
-						return mkFasta.process(geneInfoList, {skipNull: true})
+						return mkFasta.processMany(geneInfoList, {skipNull: true})
 					})
 					.then((fastaEntries) => {
 						expect(fastaEntries.length).eql(0)

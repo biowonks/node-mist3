@@ -16,18 +16,23 @@ class MakeFasta {
 		this.log = bunyan.createLogger({
 			name: 'MakeFasta',
 			level: logLevel
-
 		})
 	}
 
-	process(geneInfoList, options = {skipNull: false}) {
+	processOne(geneInfo) {
+		if (!geneInfo.ai) {
+			this.log.error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
+			throw Error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
+		}
+		return this.makeFastaEntry_(geneInfo)
+	}
+
+	processMany(geneInfoList, options = {skipNull: false}) {
 		let numEntries = 0
 		const fasta = []
 		geneInfoList.forEach((geneInfo) => {
 			if (geneInfo.ai) {
-				const tag = this.generateTag_(geneInfo)
-				const sequence = geneInfo.ai.sequence
-				const entry = this.makeFastaEntry_(tag, sequence)
+				const entry = this.makeFastaEntry_(geneInfo)
 				fasta.push(entry)
 				numEntries++
 			}
@@ -43,7 +48,9 @@ class MakeFasta {
 		return fasta
 	}
 
-	makeFastaEntry_(header, sequence) {
+	makeFastaEntry_(gene) {
+		const header = this.generateTag_(gene)
+		const sequence = this.getSequence_(gene)
 		return '>' + header + '\n' + sequence + '\n'
 	}
 
@@ -56,5 +63,9 @@ class MakeFasta {
 		orgID += species.substring(0, fastaTagDefaults.numOfLettersForSpecies)
 
 		return orgID + fastaTagDefaults.featureSeparator + geneInfo.stable_id
+	}
+
+	getSequence_(gene) {
+		return gene.ai.sequence
 	}
 }
