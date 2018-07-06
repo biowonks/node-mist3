@@ -59,10 +59,12 @@ class Genes extends NodeMist3 {
 							return gene.aseq_id === item.id
 						})[0]
 						if (!gene.ai) {
-							this.log.warn(`Aseq ${gene.aseq_id} not found`)
 							if (options.keepGoing === false) {
 								this.log.error(`Aseq ${gene.aseq_id} not found`)
 								throw Error(`Aseq ${gene.aseq_id} not found`)
+							}
+							else {
+								this.log.warn(`Aseq ${gene.aseq_id} not found`)
 							}
 						}
 					}
@@ -165,8 +167,15 @@ class Genes extends NodeMist3 {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					const allChunks = Buffer.concat(chunks)
+					try {
+						const newGenes = JSON.parse(allChunks)
+						resolve(newGenes)
+					}
+					catch (err) {
+						console.log(allChunks.toString())
+						reject(allChunks)
+					}
 				})
 				res.on('error', reject)
 			})
@@ -185,12 +194,12 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	byGenome(version) {
+	byGenomeVersion(version) {
 		const allGenes = []
 		let page = 1
 		const getGenes = (v, p) => {
 			return new Promise((resolve, reject) => {
-				this.byGenomePerPage(v, p)
+				this.byGenomeVersionPerPage(v, p)
 					.then((newGenes) => {
 						if (newGenes.length !== 0) {
 							newGenes.forEach((gene) => {
@@ -208,7 +217,7 @@ class Genes extends NodeMist3 {
 		return getGenes(version, page)
 	}
 
-	byGenomePerPage(version, page = 1) {
+	byGenomeVersionPerPage(version, page = 1) {
 		const genes = []
 		const genesPerPage = 100
 		const self = this
