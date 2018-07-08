@@ -49,15 +49,20 @@ class MakeFasta {
 	}
 
 	makeFastaEntry_(gene) {
+		this.log.debug(gene)
 		const header = this.generateTag_(gene)
 		const sequence = this.getSequence_(gene)
 		return '>' + header + '\n' + sequence + '\n'
 	}
 
 	generateTag_(geneInfo) {
-		const genus = this.genomeInfo_.genus
+		this.log.debug(this.genomeInfo_)
+		let genus = this.genomeInfo_.genus
+		if (!genus)
+			genus = this.genomeInfo_.species.split(' ')[0]
+		this.log.debug(genus)
 		const species = this.genomeInfo_.species.split(' ')[1]
-
+		this.log.debug(species)
 		let orgID = genus.substring(0, fastaTagDefaults.numOfLettersForGenus)
 		orgID += fastaTagDefaults.orgIdSeparator
 		orgID += species.substring(0, fastaTagDefaults.numOfLettersForSpecies)

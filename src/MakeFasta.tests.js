@@ -49,6 +49,27 @@ describe('MakeFasta', function() {
 				expect(fastaEntry).eql(expected)
 			})
 		})
+		it.only('should pass with this gene too', function() {
+			const geneStableId = 'GCF_000224475.1-HALAR_RS01010'
+			const genomeVersion = 'GCF_000224475.1'
+			const expectedFastaEntry = '>ha_arc|GCF_000224475.1-HALAR_RS01010\nMTDQEVQQTNTLRQVDVMVRPTTRFPVPLSDGYSVYSALLGVLEDVDADVSAHIHDSPLGSLHSSGLQGVFGDSDRDYHKTLRPNESYQLRLGVVDPADLDIFQALVNALVLDGDTIELSHGTLQVDRFESVNTTHEDIVTEAGSMDNPTIELSFETATCIEEAGEITTMFPHRGAVFSSLLGKWNRSVSDDLELELDRETIERNVIEKPIARTYNTHSVLVNRVKNKDGETRNLFRQGFTGECSYDFKNASDSVQNAVTALGLFAEYSGVGSAVARGCGCVSAEVAGQ\n'
+			const genomes = new Genomes()
+			const genes = new Genes()
+			return genomes.getGenomeInfoByVersion(genomeVersion).then((genomeInfo) => {
+				const mkFasta = new MakeFasta(genomeInfo)
+				return genes.info(geneStableId)
+					.then((geneInfo) => {
+						return genes.addAseqInfo([geneInfo])
+					})
+					.then((geneInfoPlus) => {
+						console.log(geneInfoPlus)
+						return mkFasta.processOne(geneInfoPlus[0])
+					})
+					.then((fastaEntry) => {
+						expect(fastaEntry).eql(expectedFastaEntry)
+					})
+			})
+		})
 	})
 	describe('processMany', function() {
 		it('should pass', function() {
