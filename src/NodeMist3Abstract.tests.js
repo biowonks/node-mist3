@@ -10,4 +10,6 @@ const should = chai.should()
 
 const NodeMist3Abstract = require('./NodeMist3Abstract')
 
-describe.skip('NodeMist3Abstract')
+describe('NodeMist3Abstract', function() {
+	it.skip('Find a valid API endpoint')
+})
