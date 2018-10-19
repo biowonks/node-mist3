@@ -16,18 +16,33 @@ class MakeFasta {
 		this.log = bunyan.createLogger({
 			name: 'MakeFasta',
 			level: logLevel
-
 		})
 	}
 
+<<<<<<< HEAD
 	process(geneInfoList, options = {skipNull: false}) {
+=======
+	processOne(geneInfo) {
+		if (!geneInfo.ai) {
+			this.log.error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
+			throw Error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
+		}
+		return this.makeFastaEntry_(geneInfo)
+	}
+
+	processMany(geneInfoList, options = {skipNull: false}) {
+>>>>>>> master
 		let numEntries = 0
 		const fasta = []
 		geneInfoList.forEach((geneInfo) => {
 			if (geneInfo.ai) {
+<<<<<<< HEAD
 				const tag = this.generateTag_(geneInfo)
 				const sequence = geneInfo.ai.sequence
 				const entry = this.makeFastaEntry_(tag, sequence)
+=======
+				const entry = this.makeFastaEntry_(geneInfo)
+>>>>>>> master
 				fasta.push(entry)
 				numEntries++
 			}
@@ -43,18 +58,29 @@ class MakeFasta {
 		return fasta
 	}
 
-	makeFastaEntry_(header, sequence) {
+	makeFastaEntry_(gene) {
+		this.log.debug(gene)
+		const header = this.generateTag_(gene)
+		const sequence = this.getSequence_(gene)
 		return '>' + header + '\n' + sequence + '\n'
 	}
 
 	generateTag_(geneInfo) {
-		const genus = this.genomeInfo_.genus
+		this.log.debug(this.genomeInfo_)
+		let genus = this.genomeInfo_.genus
+		if (!genus)
+			genus = this.genomeInfo_.species.split(' ')[0]
+		this.log.debug(genus)
 		const species = this.genomeInfo_.species.split(' ')[1]
-
+		this.log.debug(species)
 		let orgID = genus.substring(0, fastaTagDefaults.numOfLettersForGenus)
 		orgID += fastaTagDefaults.orgIdSeparator
 		orgID += species.substring(0, fastaTagDefaults.numOfLettersForSpecies)
 
 		return orgID + fastaTagDefaults.featureSeparator + geneInfo.stable_id
+	}
+
+	getSequence_(gene) {
+		return gene.ai.sequence
 	}
 }

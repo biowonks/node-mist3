@@ -1,5 +1,6 @@
 'use strict'
 
+<<<<<<< HEAD
 const https = require('https')
 
 const apiHostnameList = [
@@ -8,6 +9,10 @@ const apiHostnameList = [
 ]
 
 const httpsDefaultOptions = {
+=======
+let httpsDefaultOptions = {
+	hostname: 'api.mistdb.caltech.edu',
+>>>>>>> master
 	headers: {},
 	agent: false
 }
@@ -16,6 +21,7 @@ module.exports =
 class NodeMist3 {
 	constructor(options) {
 		this.httpsOptions = options ? options : httpsDefaultOptions
+<<<<<<< HEAD
 	}
 
 	init() {
@@ -31,5 +37,7 @@ class NodeMist3 {
 			}
 			return
 		})
+=======
+>>>>>>> master
 	}
 }

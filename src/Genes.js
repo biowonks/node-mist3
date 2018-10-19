@@ -1,6 +1,6 @@
 'use strict'
 
-const http = require('http')
+const https = require('https')
 const bunyan = require('bunyan')
 
 const NodeMist3 = require('./NodeMist3Abstract')
@@ -8,7 +8,9 @@ const NodeMist3 = require('./NodeMist3Abstract')
 const kDefaults = {
 	downstream: 10,
 	upstream: 10,
-	maxAseqs: 1000
+	maxAseqs: 1000,
+	maxInfo: 250,
+	maxTries: 2
 }
 
 module.exports =
@@ -21,6 +23,12 @@ class Genes extends NodeMist3 {
 				level: logLevel
 			}
 		)
+	}
+
+	checkGenes(genes = []) {
+		return new Promise((resolve, reject) => {
+
+		})
 	}
 
 	addAseqInfo(genes = [], options = {keepGoing: false}) {
@@ -85,9 +93,9 @@ class Genes extends NodeMist3 {
 
 	getAseqInfoBatch(aseqs = [], options = {throwError: true}) {
 		this.log.info(`Fetching Aseq Info from MiST3`)
-		this.httpOptions.method = 'POST'
-		this.httpOptions.path = '/v1/aseqs'
-		this.httpOptions.headers = {
+		this.httpsOptions.method = 'POST'
+		this.httpsOptions.path = '/v1/aseqs'
+		this.httpsOptions.headers = {
 			'Content-Type': 'application/json'
 		}
 		if (aseqs.length > kDefaults.maxAseqs)
@@ -96,13 +104,12 @@ class Genes extends NodeMist3 {
 		this.log.info(`Fetching information for ${aseqs.length} sequences from MiST3`)
 		let buffer = []
 		return new Promise((resolve, reject) => {
-			const req = http.request(this.httpOptions, (res) => {
+			const req = https.request(this.httpsOptions, (res) => {
 				if (res.statusCode === 400) {
 					buffer.push(Buffer.from([null]))
 				}
 				if (res.statusCode !== 200) {
 					reject(res.statusMessage)
-					return
 				}
 				res.on('data', (data) => {
 					buffer.push(data)
@@ -120,40 +127,74 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	infoAll(geneList) {
-		const queries = []
-		geneList.forEach((stableId) => {
-			queries.push(this.info(stableId))
+	infoAll(geneList, options={keepGoing: false}) {
+		const self = this
+		const newList = []
+		geneList.forEach((item) => {
+			newList.push(item)
 		})
-		return new Promise((resolve, reject) => {
-			Promise.all(queries).then((results) => {
-				resolve(results)
-			}).catch((err) => {
-				reject(err)
-			})
-		})
+		async function asyncInfo (list) {
+			const data = []
+			while (list.length !== 0) {
+				const queries = []
+				const geneBatch = list.splice(0, kDefaults.maxInfo)
+				geneBatch.forEach((stableId) => {
+					queries.push(self.info(stableId, options))
+				})
+				await Promise.all(queries).then((results) => {
+						results.forEach((item) => {
+							data.push(item)
+						})
+					}).catch((err) => {
+						throw err
+					})
+			}
+			return data			
+		}
+		return asyncInfo(newList)
 	}
 
-	info(stableId) {
+	info(stableId, options={keepGoing: false}, tries = 0) {
 		return new Promise((resolve, reject) => {
-			this.httpOptions.method = 'GET'
-			this.httpOptions.path = '/v1/genes/' + stableId
-			this.log.info('Fetching gene information from MiST3 : ' + stableId)
-			const req = http.request(this.httpOptions, (res) => {
+			this.httpsOptions.method = 'GET'
+			this.httpsOptions.path = '/v1/genes/' + stableId
+			this.log.info(`Fetching gene information from MiST3: ${stableId} | ${tries}`)
+			const req = https.request(this.httpsOptions, (res) => {
+				this.log.debug(`Information received for ${stableId}`)
 				const chunks = []
 				if (res.statusCode === 404) {
 					this.log.error(`${stableId} ${res.statusMessage}`)
-					reject(Error(`${stableId} ${res.statusMessage}`))
-					return
+					if (options.keepGoing)
+						resolve({})
+					else
+						reject(Error(`${stableId} ${res.statusMessage}`))
 				}
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					const allChunks = Buffer.concat(chunks)
+					try {
+						const newGenes = JSON.parse(allChunks)
+						resolve(newGenes)
+					}
+					catch (err) {
+						console.log(allChunks.toString())
+						reject(allChunks)
+					}
 				})
 				res.on('error', reject)
+			})
+			req.on('error', (err) => {
+				this.log.warn(`Error on request: ${stableId}`)
+				if (tries < kDefaults.maxTries) {
+					this.log.warn(`trying again: ${tries + 1}`)
+					resolve(this.info(stableId, options, tries + 1))
+					return
+				}
+				console.log('Here')
+				this.log.fatal(`Error on request: ${stableId}`)
+				throw err
 			})
 			req.end()
 		})
@@ -163,7 +204,11 @@ class Genes extends NodeMist3 {
 		const allGenes = []
 		let page = 1
 		const getGenes = (v, p) => {
+<<<<<<< HEAD
 			return new Promise((resolve, rejectg) => {
+=======
+			return new Promise((resolve, reject) => {
+>>>>>>> master
 				this.byGenomeVersionPerPage(v, p)
 					.then((newGenes) => {
 						if (newGenes.length !== 0) {
@@ -176,7 +221,7 @@ class Genes extends NodeMist3 {
 						else {
 							resolve(allGenes)
 						}
-					})
+					}).catch(reject)
 			})
 		}
 		return getGenes(version, page)
@@ -185,19 +230,36 @@ class Genes extends NodeMist3 {
 	byGenomeVersionPerPage(version, page = 1) {
 		const genes = []
 		const genesPerPage = 100
-		this.httpOptions.method = 'GET'
-		this.httpOptions.path = '/v1/genomes/' + version + '/genes?per_page=' + genesPerPage + '&page=' + page
+		const self = this
+		this.httpsOptions.method = 'GET'
+		this.httpsOptions.path = '/v1/genomes/' + version + '/genes?per_page=' + genesPerPage + '&page=' + page
 		return new Promise((resolve, reject) => {
-			this.log.info('Fetching genes from MiST3 : ' + version + ' page ' + page)
-			const req = http.request(this.httpOptions, function(res) {
+			self.log.info('Fetching genes from MiST3 : ' + version + ' page ' + page)
+			const req = https.request(this.httpsOptions, function(res) {
+				if (res.statusCode === 504) {
+					self.log.error(`${res.statusCode} - ${res.statusMessage}`)
+					return reject(res.statusCode)
+				}
 				const chunks = []
 				res.on('data', function(chunk) {
 					chunks.push(chunk)
 				})
 				res.on('end', function() {
-					const newGenes = JSON.parse(Buffer.concat(chunks))
-					resolve(newGenes)
+					let newGenes = ''
+					const buffer = Buffer.concat(chunks)
+					try {
+						newGenes = JSON.parse(buffer)
+						resolve(newGenes)
+					}
+					catch(err) {
+						self.log.error(buffer.toString())
+						reject(err)
+					}
 				})
+				req.on('error', function(err) {
+					// This is not a "Second reject", just a different sort of failure
+					reject(err);
+				});
 			})
 			req.end()
 		})
@@ -208,9 +270,9 @@ class Genes extends NodeMist3 {
 			this.info(stableId)
 				.then((mainGeneInfo) => {
 					this.log.info(`Info from reference gene acquired: ${mainGeneInfo.aseq_id}`)
-					this.httpOptions.method = 'GET'
-					this.httpOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
-					const req = http.request(this.httpOptions, (res) => {
+					this.httpsOptions.method = 'GET'
+					this.httpsOptions.path = `/v1/genes/${stableId}/neighbors?amountBefore=${upstream}&amountAfter=${downstream}`
+					const req = https.request(this.httpsOptions, (res) => {
 						const chunks = []
 						res.on('data', (chunk) => {
 							chunks.push(chunk)

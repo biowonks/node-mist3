@@ -16,4 +16,14 @@ describe('Genomes', function() {
 			})
 		})
 	})
+	describe('getInfoAll', function() {
+		it('should get info of all genomes', function() {
+			this.timeout(240000)
+			const genomes = new Genomes()
+			const minNumGenomes = 5000
+			return genomes.getInfoAll().then((genomeInfoAll) => {
+				expect(genomeInfoAll.length).greaterThan(minNumGenomes)
+			})
+		})
+	})
 })
