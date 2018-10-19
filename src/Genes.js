@@ -25,6 +25,12 @@ class Genes extends NodeMist3 {
 		)
 	}
 
+	checkGenes(genes = []) {
+		return new Promise((resolve, reject) => {
+
+		})
+	}
+
 	addAseqInfo(genes = [], options = {keepGoing: false}) {
 		this.log.info(`Adding Aseq information for ${genes.length} proteins from MiST3`)
 		return new Promise((resolve, reject) => {
@@ -152,7 +158,7 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			this.httpsOptions.method = 'GET'
 			this.httpsOptions.path = '/v1/genes/' + stableId
-			this.log.info(`Fetching gene information from MiST3 : ${stableId} | ${tries}`)
+			this.log.info(`Fetching gene information from MiST3: ${stableId} | ${tries}`)
 			const req = https.request(this.httpsOptions, (res) => {
 				this.log.debug(`Information received for ${stableId}`)
 				const chunks = []
