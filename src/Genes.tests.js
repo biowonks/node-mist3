@@ -14,12 +14,8 @@ const should = chai.should()
 const Genes = require('./Genes')
 
 describe('Genes', function() {
-<<<<<<< HEAD
-	describe('byGenomeVersion', function() {
-=======
 	this.timeout(1200000)
 	describe('byGenomes', function() {
->>>>>>> master
 		it('should pass', function() {
 			const genes = new Genes()
 			const expectedNumberOfGenes = 741
@@ -28,10 +24,10 @@ describe('Genes', function() {
 				expect(items.length).eql(expectedNumberOfGenes)
 			})
 		})
-		it('should fail with 504', function() {
+		it('should fail', function() {
 			const genes = new Genes()
 			const expectedNumberOfGenes = 741
-			const genome = 'GCF_001889065.1' // 'GCF_000006765.1'
+			const genome = 'GCF_001889063.1' // 'GCF_000006765.1'
 			return genes.byGenomeVersion(genome).should.be.rejected
 		})
 		it('must fail is passed invalid version')
@@ -58,15 +54,10 @@ describe('Genes', function() {
 	describe('infoAll', function() {
 		it('should pass', function() {
 			const genes = new Genes()
-<<<<<<< HEAD
-			const stableIds = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00010']
-			return genes.infoAll(stableIds).then((items) => {
-=======
 			const geneVersions = ['GCF_000302455.1-A994_RS01985', 'GCF_000302455.1-A994_RS00015']
 			return genes.infoAll(geneVersions).then((items) => {
->>>>>>> master
 				items.forEach((item, i) => {
-					expect(item.stable_id).eql(stableIds[i])
+					expect(item.stable_id).eql(geneVersions[i])
 				})
 			})
 		})

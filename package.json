@@ -1,10 +1,6 @@
 {
   "name": "node-mist3",
-<<<<<<< HEAD
-  "version": "1.4.8",
-=======
   "version": "1.5.1",
->>>>>>> master
   "description": "Helper package to deal with MiST3 API",
   "main": "src/index.js",
   "scripts": {
@@ -37,11 +33,7 @@
     "nyc": "^13.0.0"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "figlet": "^1.2.0",
-=======
     "debug": "^3.1.0",
->>>>>>> master
     "through2": "^2.0.3"
   }
 }

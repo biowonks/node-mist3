@@ -19,9 +19,6 @@ class MakeFasta {
 		})
 	}
 
-<<<<<<< HEAD
-	process(geneInfoList, options = {skipNull: false}) {
-=======
 	processOne(geneInfo) {
 		if (!geneInfo.ai) {
 			this.log.error(`Gene ${geneInfo.stable_id} has no protein information or it is in wrong format.`)
@@ -31,18 +28,11 @@ class MakeFasta {
 	}
 
 	processMany(geneInfoList, options = {skipNull: false}) {
->>>>>>> master
 		let numEntries = 0
 		const fasta = []
 		geneInfoList.forEach((geneInfo) => {
 			if (geneInfo.ai) {
-<<<<<<< HEAD
-				const tag = this.generateTag_(geneInfo)
-				const sequence = geneInfo.ai.sequence
-				const entry = this.makeFastaEntry_(tag, sequence)
-=======
 				const entry = this.makeFastaEntry_(geneInfo)
->>>>>>> master
 				fasta.push(entry)
 				numEntries++
 			}

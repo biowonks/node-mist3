@@ -25,12 +25,6 @@ class Genes extends NodeMist3 {
 		)
 	}
 
-	checkGenes(genes = []) {
-		return new Promise((resolve, reject) => {
-
-		})
-	}
-
 	addAseqInfo(genes = [], options = {keepGoing: false}) {
 		this.log.info(`Adding Aseq information for ${genes.length} proteins from MiST3`)
 		return new Promise((resolve, reject) => {
@@ -91,7 +85,7 @@ class Genes extends NodeMist3 {
 		})
 	}
 
-	getAseqInfoBatch(aseqs = [], options = {throwError: true}) {
+	getAseqInfoBatch(aseqs = [], options = {throwError: true}, tries = 0) {
 		this.log.info(`Fetching Aseq Info from MiST3`)
 		this.httpsOptions.method = 'POST'
 		this.httpsOptions.path = '/v1/aseqs'
@@ -109,18 +103,43 @@ class Genes extends NodeMist3 {
 					buffer.push(Buffer.from([null]))
 				}
 				if (res.statusCode !== 200) {
-					reject(res.statusMessage)
+					this.log.debug(`Error message of code ${res.statusCode}`)
+					this.log.debug(`Error message: ${res.statusMessage}`)
+					this.log.warn('********************Error requesting aseq INFO')
+					if (tries < kDefaults.maxTries) {
+						this.log.warn(`trying again: ${tries + 1}`)
+						resolve(this.getAseqInfoBatch(aseqs, options, tries + 1))
+						return
+					}
+					else {
+						console.log('Here')
+						this.log.fatal(`Can't get all the data. Aborting operation.`)
+						throw err
+					}
 				}
-				res.on('data', (data) => {
-					buffer.push(data)
-				})
-				res.on('error', reject)
-				res.on('end', () => {
-					this.log.info('Aseq retrieved')
-					const items = JSON.parse(Buffer.concat(buffer))
-					const final = []
-					resolve(items)
-				})
+				else {
+					res.on('data', (data) => {
+						buffer.push(data)
+					})
+					res.on('error', reject)
+					res.on('end', () => {
+						this.log.info('Aseq retrieved')
+						const data = Buffer.concat(buffer).toString()
+						if (data.match('html')) {
+							this.log.debug(Buffer.concat(buffer).toString())
+							this.log.debug(res.statusMessage)
+							this.log.debug(res.statusCode)
+						}
+						const items = JSON.parse(Buffer.concat(buffer))
+						const final = []
+						resolve(items)
+					})
+				}
+			})
+			req.on('error', (err) => {
+				console.log('Here')
+				this.log.fatal(`Can't get all the data. Aborting operation.`)
+				throw err
 			})
 			req.write(content)
 			req.end()
@@ -158,7 +177,7 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			this.httpsOptions.method = 'GET'
 			this.httpsOptions.path = '/v1/genes/' + stableId
-			this.log.info(`Fetching gene information from MiST3: ${stableId} | ${tries}`)
+			this.log.info(`Fetching gene information from MiST3 : ${stableId} | ${tries}`)
 			const req = https.request(this.httpsOptions, (res) => {
 				this.log.debug(`Information received for ${stableId}`)
 				const chunks = []
@@ -204,11 +223,7 @@ class Genes extends NodeMist3 {
 		const allGenes = []
 		let page = 1
 		const getGenes = (v, p) => {
-<<<<<<< HEAD
-			return new Promise((resolve, rejectg) => {
-=======
 			return new Promise((resolve, reject) => {
->>>>>>> master
 				this.byGenomeVersionPerPage(v, p)
 					.then((newGenes) => {
 						if (newGenes.length !== 0) {
