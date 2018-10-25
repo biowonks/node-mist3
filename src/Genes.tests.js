@@ -351,6 +351,52 @@ describe('Genes', function() {
 			})
 		})
 	})
+	describe('search', function() {
+		it('should return null if no info is found', function() {
+			const genes = new Genes()
+			const term = 'Galf'
+			const expected = []
+			return genes.search(term).then((response) => {
+				expect(response).eql(expected)
+			})
+		})
+		it('should return info if find gene', function() {
+			const genes = new Genes()
+			const term = 'Galf_1012'
+			const expected = [
+				{
+				  "id": 13282865,
+				  "stable_id": "GCF_000145255.1-GALF_RS05040",
+				  "component_id": 164319,
+				  "dseq_id": "zQfabUSF3UO3sUrJH83KRw",
+				  "aseq_id": "R0eYWHRrArOEBq6-QrE7uA",
+				  "accession": "WP_013292982",
+				  "version": "WP_013292982.1",
+				  "locus": "GALF_RS05040",
+				  "old_locus": "Galf_1012",
+				  "location": "1067262..1068884",
+				  "strand": "+",
+				  "start": 1067262,
+				  "stop": 1068884,
+				  "length": 1623,
+				  "names": null,
+				  "pseudo": false,
+				  "notes": null,
+				  "product": "methyl-accepting chemotaxis protein",
+				  "codon_start": 1,
+				  "translation_table": 11,
+				  "qualifiers": {},
+				  "cds_location": "1067262..1068884",
+				  "cds_qualifiers": {
+					"inference": "COORDINATES: similar to AA sequence:RefSeq:WP_013292983.1"
+				  }
+				}
+			  ]
+			return genes.search(term).then((response) => {
+				expect(response).eql(expected)
+			})
+		})
+	})
 	describe('Integration', function() {
 		describe('getGeneHood and addAseqInfo', function() {
 			it('should pass', function(done) {

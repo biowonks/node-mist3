@@ -118,7 +118,7 @@ class Genes extends NodeMist3 {
 						return
 					}
 					else {
-						console.log('Here')
+	
 						this.log.fatal(`Can't get all the data. Aborting operation.`)
 						throw err
 					}
@@ -143,7 +143,6 @@ class Genes extends NodeMist3 {
 				}
 			})
 			req.on('error', (err) => {
-				console.log('Here')
 				this.log.fatal(`Can't get all the data. Aborting operation.`)
 				throw err
 			})
@@ -204,7 +203,6 @@ class Genes extends NodeMist3 {
 						resolve(newGenes)
 					}
 					catch (err) {
-						console.log(allChunks.toString())
 						reject(allChunks)
 					}
 				})
@@ -217,7 +215,6 @@ class Genes extends NodeMist3 {
 					resolve(this.info(stableId, options, tries + 1))
 					return
 				}
-				console.log('Here')
 				this.log.fatal(`Error on request: ${stableId}`)
 				throw err
 			})
@@ -315,4 +312,27 @@ class Genes extends NodeMist3 {
 				})
 		})
 	}
+
+	search(term) {
+		return new Promise((resolve, reject) => {
+			this.httpsOptions.method = 'GET'
+			this.httpsOptions.path = '/v1/genes?search=' + term
+			const request = https.request(this.httpsOptions, (response) => {
+				const chunks = []
+				response.on('data', (chunk) => {
+					chunks.push(chunk)
+				})
+				response.on('end', () => {
+					this.log.info('Got info from search. Parsing.')
+					const info = JSON.parse(Buffer.concat(chunks))
+					resolve(info)
+				})
+				response.on('error', (err) => {
+					reject(err)
+				})
+			})
+			request.end()
+		})
+	}
+
 }

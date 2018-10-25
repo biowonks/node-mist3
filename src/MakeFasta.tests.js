@@ -62,7 +62,6 @@ describe('MakeFasta', function() {
 						return genes.addAseqInfo([geneInfo])
 					})
 					.then((geneInfoPlus) => {
-						console.log(geneInfoPlus)
 						return mkFasta.processOne(geneInfoPlus[0])
 					})
 					.then((fastaEntry) => {
