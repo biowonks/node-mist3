@@ -9,7 +9,8 @@ const kDefaults = {
 	downstream: 10,
 	upstream: 10,
 	maxAseqs: 1000,
-	maxInfo: 250,
+	maxInfo: 100,
+	maxSearch: 100,
 	maxTries: 2
 }
 
@@ -23,12 +24,6 @@ class Genes extends NodeMist3 {
 				level: logLevel
 			}
 		)
-	}
-
-	checkGenes(genes = []) {
-		return new Promise((resolve, reject) => {
-
-		})
 	}
 
 	addAseqInfo(genes = [], options = {keepGoing: false}) {
@@ -182,7 +177,7 @@ class Genes extends NodeMist3 {
 		return new Promise((resolve, reject) => {
 			this.httpsOptions.method = 'GET'
 			this.httpsOptions.path = '/v1/genes/' + stableId
-			this.log.info(`Fetching gene information from MiST3: ${stableId} | ${tries}`)
+			this.log.info(`Fetching gene information from MiST3 : ${stableId} | ${tries}`)
 			const req = https.request(this.httpsOptions, (res) => {
 				this.log.debug(`Information received for ${stableId}`)
 				const chunks = []
@@ -333,6 +328,29 @@ class Genes extends NodeMist3 {
 			})
 			request.end()
 		})
+	}
+
+	searchMany(terms = []) {
+		const self = this
+		async function asyncSearch (list) {
+			const data = []
+			while (list.length !== 0) {
+				const queries = []
+				const termBatch = list.splice(0, kDefaults.maxSearch)
+				termBatch.forEach((t) => {
+					queries.push(self.search(t))
+				})
+				await Promise.all(queries).then((results) => {
+						results.forEach((item) => {
+							data.push(item)
+						})
+					}).catch((err) => {
+						throw err
+					})
+			}
+			return data			
+		}
+		return asyncSearch(terms)
 	}
 
 }
