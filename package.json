@@ -1,6 +1,6 @@
 {
   "name": "node-mist3",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Helper package to deal with MiST3 API",
   "main": "src/index.js",
   "scripts": {
