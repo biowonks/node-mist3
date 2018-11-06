@@ -332,6 +332,10 @@ class Genes extends NodeMist3 {
 
 	searchMany(terms = []) {
 		const self = this
+		const newList = []
+		terms.forEach((item) => {
+			newList.push(item)
+		})
 		async function asyncSearch (list) {
 			const data = []
 			while (list.length !== 0) {
@@ -350,7 +354,7 @@ class Genes extends NodeMist3 {
 			}
 			return data			
 		}
-		return asyncSearch(terms)
+		return asyncSearch(newList)
 	}
 
 }
