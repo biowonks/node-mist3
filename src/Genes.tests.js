@@ -351,6 +351,228 @@ describe('Genes', function() {
 			})
 		})
 	})
+	describe('search', function() {
+		it('should return null if no info is found', function() {
+			const genes = new Genes()
+			const term = 'Galf'
+			const expected = []
+			return genes.search(term).then((response) => {
+				expect(response).eql(expected)
+			})
+		})
+		it('should return info if find gene', function() {
+			const genes = new Genes()
+			const term = 'Galf_1012'
+			const expected = [
+				{
+					id: 13282865,
+					stable_id: 'GCF_000145255.1-GALF_RS05040',
+					component_id: 164319,
+					dseq_id: 'zQfabUSF3UO3sUrJH83KRw',
+					aseq_id: 'R0eYWHRrArOEBq6-QrE7uA',
+					accession: 'WP_013292982',
+					version: 'WP_013292982.1',
+					locus: 'GALF_RS05040',
+					old_locus: 'Galf_1012',
+					location: '1067262..1068884',
+					strand: '+',
+					start: 1067262,
+					stop: 1068884,
+					length: 1623,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: '1067262..1068884',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_013292983.1'
+					}
+				}
+			]
+			return genes.search(term).then((response) => {
+				expect(response).eql(expected)
+			})
+		})
+	})
+	describe('searchMany', function() {
+		it('should return info', function() {
+			const genes = new Genes()
+			const terms = [
+				'Galf_1012',
+				'Galf_1013',
+				'X970_27400',
+				'RPC_2742',
+				'PCC21_027230',
+				'Spea_0900'
+			]
+			const expected = [
+				[{
+					id: 13282865,
+					stable_id: 'GCF_000145255.1-GALF_RS05040',
+					component_id: 164319,
+					dseq_id: 'zQfabUSF3UO3sUrJH83KRw',
+					aseq_id: 'R0eYWHRrArOEBq6-QrE7uA',
+					accession: 'WP_013292982',
+					version: 'WP_013292982.1',
+					locus: 'GALF_RS05040',
+					old_locus: 'Galf_1012',
+					location: '1067262..1068884',
+					strand: '+',
+					start: 1067262,
+					stop: 1068884,
+					length: 1623,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: '1067262..1068884',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_013292983.1'
+					}
+				}],
+				[{
+					id: 13282866,
+					stable_id: 'GCF_000145255.1-GALF_RS05045',
+					component_id: 164319,
+					dseq_id: 'qwhR8bGlSFpuWWugqj0uXA',
+					aseq_id: '2aa9s6Sz2LXYGggmkq_vAw',
+					accession: 'WP_013292983',
+					version: 'WP_013292983.1',
+					locus: 'GALF_RS05045',
+					old_locus: 'Galf_1013',
+					location: '1068967..1070619',
+					strand: '+',
+					start: 1068967,
+					stop: 1070619,
+					length: 1653,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: '1068967..1070619',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_013292983.1'
+					}}],
+				[{
+					id: 419052180,
+					stable_id: 'GCF_000510325.1-X970_RS26830',
+					component_id: 11574308,
+					dseq_id: 'minQhT-4bVsGyjpQw0yF6A',
+					aseq_id: 'TSEy2ycJLt33L6n9j5mEQg',
+					accession: 'WP_013970514',
+					version: 'WP_013970514.1',
+					locus: 'X970_RS26830',
+					old_locus: 'X970_27400',
+					location: 'complement(5907483..5909108)',
+					strand: '-',
+					start: 5907483,
+					stop: 5909108,
+					length: 1626,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: 'complement(5907483..5909108)',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_003255688.1'
+					}}],
+				[{
+					id: 2027294,
+					stable_id: 'GCF_000013745.1-RPC_RS13740',
+					component_id: 14325,
+					dseq_id: 'pitI5FewGwc5aKfJ-NGIgQ',
+					aseq_id: 'Fp3W_3cMK8aO_BnRDjlQ_Q',
+					accession: 'WP_011473186',
+					version: 'WP_011473186.1',
+					locus: 'RPC_RS13740',
+					old_locus: 'RPC_2742',
+					location: 'complement(2978047..2979729)',
+					strand: '-',
+					start: 2978047,
+					stop: 2979729,
+					length: 1683,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: 'complement(2978047..2979729)',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_011473186.1'
+					}}],
+				[{
+					id: 87911390,
+					stable_id: 'GCF_000294535.1-PCC21_RS13425',
+					component_id: 2452254,
+					dseq_id: 'RQNAuP3belz2Xu08I7OWAQ',
+					aseq_id: 'FcM1mJdagdvHt-lV1gZODg',
+					accession: 'WP_014915926',
+					version: 'WP_014915926.1',
+					locus: 'PCC21_RS13425',
+					old_locus: 'PCC21_027230',
+					location: '3067593..3069314',
+					strand: '+',
+					start: 3067593,
+					stop: 3069314,
+					length: 1722,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: '3067593..3069314',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_011093262.1'
+					}}],
+				[{
+					id: 6911181,
+					stable_id: 'GCF_000018285.1-SPEA_RS04715',
+					component_id: 75128,
+					dseq_id: 'TvhgqanPcHNXupfNOFn5Kw',
+					aseq_id: '1ebI8URKvgD9VzLr3UKPQA',
+					accession: 'WP_012154161',
+					version: 'WP_012154161.1',
+					locus: 'SPEA_RS04715',
+					old_locus: 'Spea_0900',
+					location: '1098306..1100027',
+					strand: '+',
+					start: 1098306,
+					stop: 1100027,
+					length: 1722,
+					names: null,
+					pseudo: false,
+					notes: null,
+					product: 'methyl-accepting chemotaxis protein',
+					codon_start: 1,
+					translation_table: 11,
+					qualifiers: {},
+					cds_location: '1098306..1100027',
+					cds_qualifiers: {
+						inference: 'COORDINATES: similar to AA sequence:RefSeq:WP_012276077.1'
+					}
+				}]
+			]
+			return genes.searchMany(terms).then((response) => {
+				expect(response).eql(expected)
+			})
+		})
+	})
 	describe('Integration', function() {
 		describe('getGeneHood and addAseqInfo', function() {
 			it('should pass', function(done) {

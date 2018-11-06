@@ -9,7 +9,8 @@ const kDefaults = {
 	downstream: 10,
 	upstream: 10,
 	maxAseqs: 1000,
-	maxInfo: 250,
+	maxInfo: 100,
+	maxSearch: 100,
 	maxTries: 2
 }
 
@@ -112,7 +113,7 @@ class Genes extends NodeMist3 {
 						return
 					}
 					else {
-						console.log('Here')
+	
 						this.log.fatal(`Can't get all the data. Aborting operation.`)
 						throw err
 					}
@@ -137,7 +138,6 @@ class Genes extends NodeMist3 {
 				}
 			})
 			req.on('error', (err) => {
-				console.log('Here')
 				this.log.fatal(`Can't get all the data. Aborting operation.`)
 				throw err
 			})
@@ -198,7 +198,6 @@ class Genes extends NodeMist3 {
 						resolve(newGenes)
 					}
 					catch (err) {
-						console.log(allChunks.toString())
 						reject(allChunks)
 					}
 				})
@@ -211,7 +210,6 @@ class Genes extends NodeMist3 {
 					resolve(this.info(stableId, options, tries + 1))
 					return
 				}
-				console.log('Here')
 				this.log.fatal(`Error on request: ${stableId}`)
 				throw err
 			})
@@ -309,4 +307,50 @@ class Genes extends NodeMist3 {
 				})
 		})
 	}
+
+	search(term) {
+		return new Promise((resolve, reject) => {
+			this.httpsOptions.method = 'GET'
+			this.httpsOptions.path = '/v1/genes?search=' + term
+			const request = https.request(this.httpsOptions, (response) => {
+				const chunks = []
+				response.on('data', (chunk) => {
+					chunks.push(chunk)
+				})
+				response.on('end', () => {
+					this.log.info('Got info from search. Parsing.')
+					const info = JSON.parse(Buffer.concat(chunks))
+					resolve(info)
+				})
+				response.on('error', (err) => {
+					reject(err)
+				})
+			})
+			request.end()
+		})
+	}
+
+	searchMany(terms = []) {
+		const self = this
+		async function asyncSearch (list) {
+			const data = []
+			while (list.length !== 0) {
+				const queries = []
+				const termBatch = list.splice(0, kDefaults.maxSearch)
+				termBatch.forEach((t) => {
+					queries.push(self.search(t))
+				})
+				await Promise.all(queries).then((results) => {
+						results.forEach((item) => {
+							data.push(item)
+						})
+					}).catch((err) => {
+						throw err
+					})
+			}
+			return data			
+		}
+		return asyncSearch(terms)
+	}
+
 }

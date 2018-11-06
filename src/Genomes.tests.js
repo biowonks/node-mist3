@@ -16,7 +16,7 @@ describe('Genomes', function() {
 			})
 		})
 	})
-	describe('getInfoAll', function() {
+	describe.skip('getInfoAll', function() {
 		it('should get info of all genomes', function() {
 			this.timeout(240000)
 			const genomes = new Genomes()
