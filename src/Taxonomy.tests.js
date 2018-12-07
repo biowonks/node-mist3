@@ -76,6 +76,12 @@ describe('Taxonomy', function() {
 			const taxonomy = new Taxonomy()
 			return taxonomy.getParents(taxid).should.be.rejected
 		})
+		it('should reject with empty taxid', function() {
+			this.timeout(60000)
+			const taxid = ''
+			const taxonomy = new Taxonomy()
+			return taxonomy.getParents(taxid).should.be.rejected
+		})
 	})
 	describe('getParentsMany', function() {
 		it('should work with valid list of ids', function () {

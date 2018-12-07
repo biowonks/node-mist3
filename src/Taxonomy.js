@@ -44,6 +44,8 @@ class Taxonomy extends NodeMist3 {
 					let taxonomy = []
 					try {
 						taxonomy = JSON.parse(buffer)
+						if (!Array.isArray(taxonomy))
+							throw Error(taxonomy)
 						resolve(taxonomy)
 					}
 					catch (err) {
@@ -52,7 +54,6 @@ class Taxonomy extends NodeMist3 {
 							resolve([])
 						}
 						else {
-							console.log('hey')
 							this.log.error(buffer.toString())
 							reject(err)
 						}
