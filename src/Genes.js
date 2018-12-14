@@ -309,11 +309,16 @@ class Genes extends NodeMist3 {
 	}
 
 	search(term) {
+		const self = this
 		return new Promise((resolve, reject) => {
 			this.httpsOptions.method = 'GET'
 			this.httpsOptions.path = '/v1/genes?search=' + term
 			const request = https.request(this.httpsOptions, (response) => {
 				const chunks = []
+				if (response.statusCode === 504) {
+					self.log.error(`${response.statusCode} - ${response.statusMessage}`)
+					return reject(response.statusCode)
+				}
 				response.on('data', (chunk) => {
 					chunks.push(chunk)
 				})

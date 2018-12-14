@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "debug": "^3.1.0",
+    "dtrace-provider": "^0.8.7",
     "through2": "^2.0.3"
   }
 }
