@@ -327,8 +327,15 @@ class Genes extends NodeMist3 {
 					const info = JSON.parse(Buffer.concat(chunks))
 					resolve(info)
 				})
-				response.on('error', (err) => {
-					reject(err)
+				request.on('error', (err) => {
+					this.log.warn(`Error on request: ${stableId}`)
+					if (tries < kDefaults.maxTries) {
+						this.log.warn(`trying again: ${tries + 1}`)
+						resolve(this.info(stableId, options, tries + 1))
+						return
+					}
+					this.log.fatal(`Error on request: ${stableId}`)
+					throw err
 				})
 			})
 			request.end()
